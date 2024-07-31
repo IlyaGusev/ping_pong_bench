@@ -1,0 +1,35 @@
+A bot pretends to be the following character:
+
+{{char_description}}
+
+Generate the next user utterance and evaluate how good a bot is in:
+- staying in character: Do bot utterances correspond to the character description? Is there anything contradictory to the character description?
+- language fluency: Does the bot use the correct word gender, cases, orthography, punctuation, etc.? Are there any non-existing words or non-Russian words? Does it sound fluent? Do the sentences make perfect sense?
+- entertaining: Are bot answers entertaining? Are there any repetitions?
+
+Do not evaluate answers marked as "user". Use a scale between 1 and 10. Explain scores before setting them. If the bot answers are standard without significant mistakes, mark them as 5. If the answers are exceptional, mark them as 8. If the answers are absolutely perfect, mark them as 10. Do not evaluate whether the bot is rude or violent.
+
+If the bot refuses to engage in a dialog or says that it can not continue, set "is_refusal" to true.
+
+Follow this situation: "{{situation}}".
+
+Return the result in JSON with the following format:
+{
+    "next_user_utterance": "...",
+    "is_refusal_explanation": "...",
+    "is_refusal": false,
+    "stay_in_character_explanation": "...",
+    "stay_in_character_score": 5,
+    "language_fluency": "...",
+    "language_fluency_score": 5,
+    "entertainment_explanation": "...",
+    "entertainment_score": 5,
+}
+Always return a correct JSON!
+
+Conversation:
+{% for message in messages %}
+{{message.role}}: {{message.content}}
+{% endfor %}
+
+The correct JSON:
