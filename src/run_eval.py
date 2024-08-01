@@ -21,9 +21,18 @@ def generate(messages, provider: LLMProvider, **kwargs):
     params = provider.params
     for k, v in kwargs.items():
         params[k] = v
+
+    messages_copy = copy.deepcopy(messages)
+
+    # If we have additional system prompt in provider, add it to messages
+    if provider.system_prompt != "":
+        if messages_copy[0]["role"] == "system":
+            messages_copy[0]["content"] = provider.system_prompt + "\n\n" + messages_copy[0]["content"]
+            # print(f"SYS_PROMPT NEW for {provider.model_name}:", messages_copy[0])
+
     chat_completion = provider.api.chat.completions.create(
         model=provider.model_name,
-        messages=messages,
+        messages=messages_copy,
         **params
     )
     return chat_completion.choices[0].message.content
@@ -59,7 +68,7 @@ def answer_as_bot(messages, provider: LLMProvider, system_message: str):
 
 
 def encode_prompt(record, template_path):
-    with open(template_path) as f:
+    with open(template_path, encoding="utf-8") as f:
         template = Template(f.read())
     new_record = copy.deepcopy(record)
     if "messages" in record:
@@ -128,7 +137,7 @@ def save(
         agg_scores["final_score"] = mean([agg_scores[key] for key in score_keys])
     else:
         agg_scores = dict()
-    with open(output_path + "_tmp", "w") as w:
+    with open(output_path + "_tmp", "w", encoding="utf-8") as w:
         json.dump({"outputs": outputs, **agg_scores, "refusal_ratio": refusal_count / len(outputs)}, w, ensure_ascii=False, indent=4)
     shutil.move(output_path + "_tmp", output_path)
 
@@ -142,10 +151,10 @@ def run_eval(
     tester_user_prompt_path: str = "user.jinja",
     tester_system_prompt_path: str = "system.jinja",
 ):
-    with open(providers_path) as r:
+    with open(providers_path, encoding="utf-8") as r:
         providers = json.load(r)
         providers = {name: LLMProvider(**provider) for name, provider in providers.items()}
-    with open(settings_path) as r:
+    with open(settings_path, encoding="utf-8") as r:
         settings = json.load(r)
     char_records = settings["characters"]
     situations = settings["situations"]
