@@ -5,5 +5,7 @@ description: >-
 baseurl: /ping_pong_bench/
 url: https://ilyagusev.github.io/
 github_username: IlyaGusev
+remote_theme: pages-themes/minimal@v0.2.0
 markdown: kramdown
-theme: jekyll-theme-minimal
+plugins:
+- jekyll-remote-theme
