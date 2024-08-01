@@ -17,8 +17,8 @@ class LLMProvider:
         api_key: str,
         system_prompt: str = "",
         params: Dict[str, Any] = DEFAULT_PARAMS,
-        **kwargs
-    ):
+        **kwargs: Any
+    ) -> None:
         self.model_name = model_name
         self.system_prompt = system_prompt
         self.api = OpenAI(base_url=base_url, api_key=api_key)
