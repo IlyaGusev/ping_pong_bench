@@ -1,6 +1,5 @@
 ---
 layout: home
-title: "Report"
 ---
 
 # Результаты
