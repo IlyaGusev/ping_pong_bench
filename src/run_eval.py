@@ -208,7 +208,7 @@ def save(
     shutil.move(tmp_path, output_path)
 
 
-def compose_key(character, situation):
+def compose_key(character: Character, situation: Situation) -> Tuple[str, str]:
     return (character.char_name, situation.text)
 
 
@@ -234,8 +234,8 @@ def run_eval(
             for output in outputs:
                 character = Character.from_dict(output["character"])
                 situation = Situation.from_dict(output["situation"])
-                key = compose_key(character=character, situation=situation)
-                existing_keys.add(key)
+                record_key = compose_key(character=character, situation=situation)
+                existing_keys.add(record_key)
 
     tester_provider = providers[tester_name]
     testee_provider = providers[testee_name]
@@ -244,9 +244,9 @@ def run_eval(
             messages: ChatMessages = []
             scores: Dict[str, List[int]] = defaultdict(list)
             has_refusal = False
-            key = compose_key(character=character, situation=situation)
-            if key in existing_keys:
-                print(f"Existing key: {key}")
+            record_key = compose_key(character=character, situation=situation)
+            if record_key in existing_keys:
+                print(f"Existing key: {record_key}")
                 continue
             for _ in range(situation.num_turns + 1):
                 output = run_tester(
