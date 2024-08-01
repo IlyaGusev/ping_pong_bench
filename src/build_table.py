@@ -27,6 +27,24 @@ def build_table(
 
     print(pd.DataFrame(records).sort_values(by="final_score", ascending=False)[columns])
 
+    from tabulate import tabulate
+
+    df = pd.DataFrame(records).sort_values(by="final_score", ascending=False)[columns]
+
+    # Convert DataFrame to list of lists for tabulate
+    table_data = df.values.tolist()
+
+    # Add column names as the first row
+    table_data.insert(0, columns)
+
+    # Create the table using tabulate
+    table = tabulate(table_data, headers="firstrow", tablefmt="github", floatfmt=".2f")
+
+    print("\n----- Github MD format -----\n")
+
+    # Output table in Github MD format
+    print(table)
+
 
 if __name__ == "__main__":
     fire.Fire(build_table)
