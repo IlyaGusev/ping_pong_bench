@@ -34,14 +34,14 @@ def build_table(results_dir: str, output_path: Optional[str] = None) -> None:
     pd.set_option("display.width", None)
     pd.set_option("display.max_colwidth", None)
 
-    print(pd.DataFrame(records).sort_values(by="final_score", ascending=False)[columns])
-
     df = pd.DataFrame(records).sort_values(by="final_score", ascending=False)[columns]
+    print(df)
 
     # Convert DataFrame to list of lists for tabulate
     table_data = df.values.tolist()
 
     # Add column names as the first row
+    columns = [row.replace("_", " ").capitalize() for row in columns]
     table_data.insert(0, columns)
 
     # Create the table using tabulate
