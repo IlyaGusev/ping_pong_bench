@@ -1,6 +1,6 @@
 title: PingPong Benchamrk
 description: A benchmark for role-playing LLMs
-theme: jekyll-theme-minimal
+theme: jekyll-theme-hacker
 baseurl: /ping_pong_bench/
 url: https://ilyagusev.github.io/
 github_username: IlyaGusev
