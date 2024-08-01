@@ -21,9 +21,18 @@ def generate(messages, provider: LLMProvider, **kwargs):
     params = provider.params
     for k, v in kwargs.items():
         params[k] = v
+
+    messages_copy = copy.deepcopy(messages)
+
+    # If we have additional system prompt in provider, add it to messages
+    if provider.system_prompt != "":
+        if messages_copy[0]["role"] == "system":
+            messages_copy[0]["content"] = provider.system_prompt + "\n\n" + messages_copy[0]["content"]
+            # print(f"SYS_PROMPT NEW for {provider.model_name}:", messages_copy[0])
+
     chat_completion = provider.api.chat.completions.create(
         model=provider.model_name,
-        messages=messages,
+        messages=messages_copy,
         **params
     )
     return chat_completion.choices[0].message.content
