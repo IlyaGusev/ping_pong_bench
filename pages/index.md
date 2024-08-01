@@ -4,7 +4,7 @@ layout: default
 
 # Результаты
 
-| model_name                 |   final_score |   refusal_ratio |   stay_in_character_score |   language_fluency_score |   entertainment_score |   support |
+| Model name                 |   Final score |   Refusal ratio |   Stay-in-character score |   Language fluency score |   Entertainment Score |   Support |
 |----------------------------|---------------|-----------------|---------------------------|--------------------------|-----------------------|-----------|
 | claude_3_5_sonnet          |          8.11 |            0.20 |                      8.41 |                     8.05 |                  7.86 |        25 |
 | claude_haiku               |          7.93 |            0.08 |                      8.08 |                     8.04 |                  7.66 |        25 |
