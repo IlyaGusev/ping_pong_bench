@@ -1,19 +1,21 @@
 import os
 import fire  # type: ignore
 import json
+from typing import Optional
 from pathlib import Path
 
 import pandas as pd  # type: ignore
+from tabulate import tabulate
 
 
-def build_table(results_dir: str) -> None:
+def build_table(results_dir: str, output_path: Optional[str] = None) -> None:
     records = []
     for file_name in os.listdir(results_dir):
         file_path = Path(os.path.join(results_dir, file_name))
         model_name = file_path.stem
         with open(file_path, encoding="utf-8") as r:
             result = json.load(r)
-        result.pop("outputs")
+        result["support"] = len(result.pop("outputs"))
         result["model_name"] = model_name
         records.append(result)
     columns = [
@@ -23,6 +25,7 @@ def build_table(results_dir: str) -> None:
         "stay_in_character_score",
         "language_fluency_score",
         "entertainment_score",
+        "support",
     ]
     pd.set_option("display.precision", 2)
 
@@ -32,8 +35,6 @@ def build_table(results_dir: str) -> None:
     pd.set_option("display.max_colwidth", None)
 
     print(pd.DataFrame(records).sort_values(by="final_score", ascending=False)[columns])
-
-    from tabulate import tabulate
 
     df = pd.DataFrame(records).sort_values(by="final_score", ascending=False)[columns]
 
@@ -46,10 +47,14 @@ def build_table(results_dir: str) -> None:
     # Create the table using tabulate
     table = tabulate(table_data, headers="firstrow", tablefmt="github", floatfmt=".2f")
 
-    print("\n----- Github MD format -----\n")
-
     # Output table in Github MD format
+    print("\n----- Github MD format -----\n")
     print(table)
+
+    if output_path:
+        table = "# Результаты\n\n" + table
+        with open(output_path, "w") as w:
+            w.write(table)
 
 
 if __name__ == "__main__":

@@ -188,6 +188,8 @@ def run_tester(
 def save(
     output_path: str,
     outputs: List[Dict[str, Any]],
+    tester_provider: LLMProvider,
+    testee_provider: LLMProvider,
 ) -> None:
     scores: Dict[str, List[int]] = defaultdict(list)
     refusal_count = sum([int(o["has_refusal"]) for o in outputs])
@@ -198,13 +200,24 @@ def save(
 
     agg_scores = dict()
     if scores:
-        agg_scores = {k: mean(v) for k, v in scores.items()}
+        agg_scores = {k + "_score": mean(v) for k, v in scores.items()}
         agg_scores["final_score"] = mean(agg_scores.values())
     refusal_ratio = refusal_count / len(outputs)
 
     tmp_path = output_path + "_tmp"
     with open(tmp_path, "w", encoding="utf-8") as w:
-        json.dump({"outputs": outputs, "refusal_ratio": refusal_ratio, **agg_scores}, w, ensure_ascii=False, indent=4)
+        json.dump(
+            {
+                "outputs": outputs,
+                "refusal_ratio": refusal_ratio,
+                "tester": tester_provider.to_dict(),
+                "testee": testee_provider.to_dict(),
+                **agg_scores,
+            },
+            w,
+            ensure_ascii=False,
+            indent=4,
+        )
     shutil.move(tmp_path, output_path)
 
 
@@ -248,41 +261,47 @@ def run_eval(
             if record_key in existing_keys:
                 print(f"Existing key: {record_key}")
                 continue
-            for _ in range(situation.num_turns + 1):
-                output = run_tester(
-                    character=character,
-                    situation=situation,
-                    messages=messages,
-                    user_prompt_path=tester_user_prompt_path,
-                    system_prompt_path=tester_system_prompt_path,
-                    provider=tester_provider,
-                )
-                if messages:
-                    if output.is_refusal:
-                        has_refusal = True
-                        break
-                    output_scores = output.get_scores()
-                    for key, score in output_scores.items():
-                        scores[key].append(score)
-                messages.append({"role": "user", "content": output.next_user_utterance})
-                bot_message = run_testee(
-                    provider=testee_provider,
-                    messages=messages,
-                    character=character,
-                )
-                messages.append({"role": "assistant", "content": bot_message})
-            if not has_refusal:
-                messages = messages[:-2]
-            final_output = {
-                **output.to_dict(),
-                "messages": messages,
-                "character": character.to_dict(),
-                "situation": situation.to_dict(),
-                "has_refusal": has_refusal,
-                "scores": scores,
-            }
-            outputs.append(final_output)
-            save(output_path, outputs)
+            try:
+                for _ in range(situation.num_turns + 1):
+                    output = run_tester(
+                        character=character,
+                        situation=situation,
+                        messages=messages,
+                        user_prompt_path=tester_user_prompt_path,
+                        system_prompt_path=tester_system_prompt_path,
+                        provider=tester_provider,
+                    )
+                    if messages:
+                        if output.is_refusal:
+                            has_refusal = True
+                            break
+                        output_scores = output.get_scores()
+                        for key, score in output_scores.items():
+                            scores[key].append(score)
+                    messages.append({"role": "user", "content": output.next_user_utterance})
+                    bot_message = run_testee(
+                        provider=testee_provider,
+                        messages=messages,
+                        character=character,
+                    )
+                    messages.append({"role": "assistant", "content": bot_message})
+                if not has_refusal:
+                    messages = messages[:-2]
+                final_output = {
+                    **output.to_dict(),
+                    "messages": messages,
+                    "character": character.to_dict(),
+                    "situation": situation.to_dict(),
+                    "has_refusal": has_refusal,
+                    "scores": scores,
+                }
+                outputs.append(final_output)
+            except Exception:
+                traceback.print_exc()
+                time.sleep(30)
+                continue
+
+            save(output_path, outputs, tester_provider, testee_provider)
 
 
 if __name__ == "__main__":

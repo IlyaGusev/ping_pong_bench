@@ -26,3 +26,10 @@ class LLMProvider:
         for k, v in DEFAULT_PARAMS.items():
             if k not in self.params:
                 self.params[k] = v
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "model_name": self.model_name,
+            "system_prompt": self.system_prompt,
+            "params": self.params,
+        }
