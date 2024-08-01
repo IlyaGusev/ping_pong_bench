@@ -52,7 +52,7 @@ def build_table(results_dir: str, output_path: Optional[str] = None) -> None:
     print(table)
 
     if output_path:
-        table = "# Результаты\n\n" + table
+        table = "# Results\n\n" + table
         with open(output_path, "w") as w:
             w.write(table)
 
