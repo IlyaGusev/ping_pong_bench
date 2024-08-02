@@ -83,7 +83,7 @@ def encode_prompt(template_path: str, **kwargs: Any) -> str:
             m["role"] = mapping.get(m["role"], m["role"])
         new_kwargs["messages"] = messages
 
-    return template.render(**new_kwargs).strip() + "\n"
+    return template.render(**new_kwargs).strip()
 
 
 def generate(messages: ChatMessages, provider: LLMProvider, **kwargs: Any) -> str:
@@ -262,7 +262,7 @@ def run_eval(
                 print(f"Existing key: {record_key}")
                 continue
             try:
-                for _ in range(situation.num_turns + 1):
+                for turn in range(situation.num_turns + 1):
                     output = run_tester(
                         character=character,
                         situation=situation,
@@ -279,6 +279,8 @@ def run_eval(
                         output_scores = output.get_scores()
                         for key, score in output_scores.items():
                             scores[key].append(score)
+                    if turn == situation.num_turns:
+                        break
                     messages.append({"role": "user", "content": output.next_user_utterance})
                     bot_message = run_testee(
                         provider=testee_provider,
@@ -287,8 +289,6 @@ def run_eval(
                         character_prompt_path=settings.character_prompt_path,
                     )
                     messages.append({"role": "assistant", "content": bot_message})
-                if not has_refusal:
-                    messages = messages[:-2]
                 final_output = {
                     **output.to_dict(),
                     "messages": messages,

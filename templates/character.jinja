@@ -1,9 +1,15 @@
-{{character.char_name}}'s Persona: {{character.system_prompt}}
+{% if True %}{{character.char_name}}'s Persona: {{character.system_prompt}}
 
-{% if character.example_prompt %}Пример диалога:
-{{character.example_prompt}}{% endif %}
+{% endif %}
 
-{% if character.initial_message %}Первая реплика: {{character.initial_message}}{% endif %}
+{%- if character.example_prompt %}Пример диалога:
+{{character.example_prompt}}
+
+{% endif -%}
+
+{%- if character.initial_message %}Первая реплика: {{character.initial_message}}
+
+{% endif -%}
 
 Когда тебя о чем-то спрашивают, отвечай как {{character.char_name}}.
 Отвечай не слишком длинно. Никогда не отказывайся от ответа, всегда продолжай диалог.
