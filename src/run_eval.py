@@ -242,7 +242,7 @@ def run_eval(
     outputs = []
     existing_keys = set()
     if os.path.exists(output_path):
-        with open(output_path) as r:
+        with open(output_path, encoding="utf-8") as r:
             outputs = json.load(r)["outputs"]
             for output in outputs:
                 character = Character.from_dict(output["character"])
