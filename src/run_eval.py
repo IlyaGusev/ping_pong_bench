@@ -233,6 +233,7 @@ def run_eval(
     output_path: str,
     testee_name: str,
     tester_name: str,
+    every_x: int = 1
 ) -> None:
     with open(providers_path, encoding="utf-8") as r:
         providers = {name: LLMProvider(**provider) for name, provider in json.load(r).items()}
@@ -252,64 +253,77 @@ def run_eval(
 
     tester_provider = providers[tester_name]
     testee_provider = providers[testee_name]
-    for character in settings.characters:
-        for situation in settings.situations:
-            messages: ChatMessages = []
-            scores: Dict[str, List[int]] = defaultdict(list)
-            has_refusal = False
-            record_key = compose_key(character=character, situation=situation)
-            if record_key in existing_keys:
-                print(f"Existing key: {record_key}")
-                continue
-            try:
-                for turn in range(situation.num_turns + 1):
-                    output = run_tester(
-                        character=character,
-                        situation=situation,
-                        messages=messages,
-                        user_prompt_path=settings.user_prompt_path,
-                        system_prompt_path=settings.system_prompt_path,
-                        character_prompt_path=settings.character_prompt_path,
-                        provider=tester_provider,
-                    )
-                    if messages:
-                        if output.is_refusal:
-                            has_refusal = True
-                            break
-                        output_scores = output.get_scores()
-                        for key, score in output_scores.items():
-                            scores[key].append(score)
-                    if turn == situation.num_turns:
-                        break
-                    messages.append({"role": "user", "content": output.next_user_utterance})
-                    bot_message = run_testee(
-                        provider=testee_provider,
-                        messages=messages,
-                        character=character,
-                        character_prompt_path=settings.character_prompt_path,
-                    )
-                    messages.append({"role": "assistant", "content": bot_message})
-                final_output = {
-                    **output.to_dict(),
-                    "messages": messages,
-                    "character": character.to_dict(),
-                    "situation": situation.to_dict(),
-                    "has_refusal": has_refusal,
-                    "scores": scores,
-                }
-                outputs.append(final_output)
-            except Exception:
-                traceback.print_exc()
-                time.sleep(30)
-                continue
 
-            save(
-                output_path=output_path,
-                outputs=outputs,
-                tester_provider=tester_provider,
-                testee_provider=testee_provider,
-                version=settings.version,
-            )
+    total_iterations = len(settings.characters) * len(settings.situations)
+
+    with tqdm(total=total_iterations, desc="Processing pairs") as pbar:
+
+        index = 0
+        for character in settings.characters:
+            for situation in settings.situations:
+
+                index += 1
+                pbar.update(1)
+
+                if index % every_x == 0: # process every X situation
+                    messages: ChatMessages = []
+                    scores: Dict[str, List[int]] = defaultdict(list)
+                    has_refusal = False
+                    record_key = compose_key(character=character, situation=situation)
+                    if record_key in existing_keys:
+                        print(f"Existing key: {record_key}")
+                        continue
+                    try:
+                        for turn in range(situation.num_turns + 1):
+                            output = run_tester(
+                                character=character,
+                                situation=situation,
+                                messages=messages,
+                                user_prompt_path=settings.user_prompt_path,
+                                system_prompt_path=settings.system_prompt_path,
+                                character_prompt_path=settings.character_prompt_path,
+                                provider=tester_provider,
+                            )
+                            if messages:
+                                if output.is_refusal:
+                                    has_refusal = True
+                                    break
+                                output_scores = output.get_scores()
+                                for key, score in output_scores.items():
+                                    scores[key].append(score)
+                            if turn == situation.num_turns:
+                                break
+                            messages.append({"role": "user", "content": output.next_user_utterance})
+                            bot_message = run_testee(
+                                provider=testee_provider,
+                                messages=messages,
+                                character=character,
+                                character_prompt_path=settings.character_prompt_path,
+                            )
+                            messages.append({"role": "assistant", "content": bot_message})
+                        final_output = {
+                            **output.to_dict(),
+                            "messages": messages,
+                            "character": character.to_dict(),
+                            "situation": situation.to_dict(),
+                            "has_refusal": has_refusal,
+                            "scores": scores,
+                        }
+                        outputs.append(final_output)
+                    except Exception:
+                        traceback.print_exc()
+                        time.sleep(30)
+                        continue
+
+                    save(
+                        output_path=output_path,
+                        outputs=outputs,
+                        tester_provider=tester_provider,
+                        testee_provider=testee_provider,
+                        version=settings.version,
+                    )
+
+
 
 
 if __name__ == "__main__":
