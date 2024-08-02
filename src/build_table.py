@@ -3,6 +3,7 @@ import fire  # type: ignore
 import json
 from typing import Optional
 from pathlib import Path
+from statistics import mean
 
 import pandas as pd  # type: ignore
 from tabulate import tabulate
@@ -15,7 +16,9 @@ def build_table(results_dir: str, output_path: Optional[str] = None) -> None:
         model_name = file_path.stem
         with open(file_path, encoding="utf-8") as r:
             result = json.load(r)
-        result["support"] = len(result.pop("outputs"))
+        outputs = result.pop("outputs")
+        result["num_situations"] = len(outputs)
+        result["avg_length"] = int(mean([len(m["content"]) for o in outputs for m in o["messages"] if m["role"] == "assistant"]))
         result["model_name"] = model_name
         records.append(result)
     columns = [
@@ -25,7 +28,8 @@ def build_table(results_dir: str, output_path: Optional[str] = None) -> None:
         "stay_in_character_score",
         "language_fluency_score",
         "entertainment_score",
-        "support",
+        "num_situations",
+        "avg_length"
     ]
     pd.set_option("display.precision", 2)
 
