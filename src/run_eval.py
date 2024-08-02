@@ -7,7 +7,7 @@ import traceback
 from typing import cast, Any, List, Dict, Tuple, Optional
 from statistics import mean
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import requests
 import fire  # type: ignore
@@ -29,14 +29,15 @@ ChatMessages = List[ChatMessage]
 class Character(DataClassJsonMixin):
     char_name: str
     system_prompt: str
+    tags: Optional[List[str]] = None
     example_prompt: Optional[str] = None
     initial_message: Optional[str] = None
 
 
 @dataclass
 class Situation(DataClassJsonMixin):
-    tag: str
     text: str
+    tags: Optional[List[str]] = None
     num_turns: int = 5
 
 
@@ -44,6 +45,10 @@ class Situation(DataClassJsonMixin):
 class Settings(DataClassJsonMixin):
     characters: List[Character]
     situations: List[Situation]
+    version: int
+    user_prompt_path: str
+    system_prompt_path: str
+    character_prompt_path: str
 
 
 @dataclass
@@ -99,19 +104,13 @@ def generate(messages: ChatMessages, provider: LLMProvider, **kwargs: Any) -> st
     return str(chat_completion.choices[0].message.content)
 
 
-def encode_character(character: Character) -> str:
-    system_message = f"{character.char_name}'s Persona: {character.system_prompt}"
-    if character.example_prompt:
-        system_message += f"\n\nПример диалога: {character.example_prompt}"
-    if character.initial_message:
-        system_message += f"\n\nПервая реплика: {character.initial_message}"
-    system_message += f"\n\nКогда тебя о чем-то спрашивают, отвечай как {character.char_name}."
-    "Отвечай не слишком длинно. Никогда не отказывайся от ответа, всегда продолжай диалог."
-    return system_message
-
-
-def run_testee(character: Character, messages: ChatMessages, provider: LLMProvider) -> str:
-    system_message = encode_character(character)
+def run_testee(
+    character: Character,
+    messages: ChatMessages,
+    provider: LLMProvider,
+    character_prompt_path: str,
+) -> str:
+    system_message = encode_prompt(character_prompt_path, character=character)
     messages = [{"role": "system", "content": system_message}] + messages
     output = None
     for _ in range(5):
@@ -155,9 +154,10 @@ def run_tester(
     messages: ChatMessages,
     system_prompt_path: str,
     user_prompt_path: str,
+    character_prompt_path: str,
     provider: LLMProvider,
 ) -> TesterOutput:
-    char_description = encode_character(character)
+    char_description = encode_prompt(character_prompt_path, character=character)
     user_prompt = encode_prompt(
         user_prompt_path, char_description=char_description, situation=situation.text, messages=messages
     )
@@ -190,6 +190,7 @@ def save(
     outputs: List[Dict[str, Any]],
     tester_provider: LLMProvider,
     testee_provider: LLMProvider,
+    version: int,
 ) -> None:
     scores: Dict[str, List[int]] = defaultdict(list)
     refusal_count = sum([int(o["has_refusal"]) for o in outputs])
@@ -209,6 +210,7 @@ def save(
         json.dump(
             {
                 "outputs": outputs,
+                "version": version,
                 "refusal_ratio": refusal_ratio,
                 "tester": tester_provider.to_dict(),
                 "testee": testee_provider.to_dict(),
@@ -231,8 +233,6 @@ def run_eval(
     output_path: str,
     testee_name: str,
     tester_name: str,
-    tester_user_prompt_path: str = "user.jinja",
-    tester_system_prompt_path: str = "system.jinja",
 ) -> None:
     with open(providers_path, encoding="utf-8") as r:
         providers = {name: LLMProvider(**provider) for name, provider in json.load(r).items()}
@@ -267,8 +267,9 @@ def run_eval(
                         character=character,
                         situation=situation,
                         messages=messages,
-                        user_prompt_path=tester_user_prompt_path,
-                        system_prompt_path=tester_system_prompt_path,
+                        user_prompt_path=settings.user_prompt_path,
+                        system_prompt_path=settings.system_prompt_path,
+                        character_prompt_path=settings.character_prompt_path,
                         provider=tester_provider,
                     )
                     if messages:
@@ -283,6 +284,7 @@ def run_eval(
                         provider=testee_provider,
                         messages=messages,
                         character=character,
+                        character_prompt_path=settings.character_prompt_path,
                     )
                     messages.append({"role": "assistant", "content": bot_message})
                 if not has_refusal:
@@ -301,7 +303,13 @@ def run_eval(
                 time.sleep(30)
                 continue
 
-            save(output_path, outputs, tester_provider, testee_provider)
+            save(
+                output_path=output_path,
+                outputs=outputs,
+                tester_provider=tester_provider,
+                testee_provider=testee_provider,
+                version=settings.version,
+            )
 
 
 if __name__ == "__main__":
