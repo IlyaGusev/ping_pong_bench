@@ -52,8 +52,8 @@ def build_table(results_dir: str, output_path: Optional[str] = None) -> None:
     table = tabulate(table_data, headers="firstrow", tablefmt="github", floatfmt=".2f")
 
     # Output table in Github MD format
-    print("\n----- Github MD format -----\n")
-    print(table)
+    # print("\n----- Github MD format -----\n")
+    # print(table)
 
     if output_path:
         table = "# Results\n\n" + table
