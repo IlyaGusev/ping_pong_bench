@@ -1,31 +1,32 @@
 import json
-import math
-from statistics import mean
 import html
+from statistics import mean
 import base64
-import uuid
+import math
+from typing import List, Dict, Any, Union
 
 
-def safe_mean(lst):
+def safe_mean(lst: List[float]) -> float:
     return mean(lst) if lst else float('nan')
 
 
-def format_score_safe(score):
+def format_score_safe(score: float) -> str:
     if math.isnan(score):
         return "NaN"
     return f"{score:.2f}"
 
 
-def generate_html(data):
-    characters = list(set(output['character']['char_name'] for output in data['outputs']))
-    situations = list(set(output['situation']['text'] for output in data['outputs']))
+def generate_html(data: Dict[str, Any]) -> str:
+    characters: List[str] = list(set(output['character']['char_name'] for output in data['outputs']))
+    situations: List[str] = list(set(output['situation']['text'] for output in data['outputs']))
 
-    grouped_outputs = {situation: [] for situation in situations}
+    grouped_outputs: Dict[str, List[Dict[str, Any]]] = {situation: [] for situation in situations}
     for output in data['outputs']:
         grouped_outputs[output['situation']['text']].append(output)
 
-    scores = {situation: {char: [] for char in characters} for situation in situations}
-    dialogs = {}
+    scores: Dict[str, Dict[str, List[float]]] = {situation: {char: [] for char in characters} for situation in
+                                                 situations}
+    dialogs: Dict[str, List[Dict[str, str]]] = {}
 
     for situation, outputs in grouped_outputs.items():
         for output in outputs:
@@ -70,12 +71,12 @@ def generate_html(data):
         html_content += f"<th>{html.escape(char)}</th>"
     html_content += "<th>Среднее</th></tr>"
 
-    character_averages = {char: [] for char in characters}
+    character_averages: Dict[str, List[float]] = {char: [] for char in characters}
     for situation in situations:
         truncated_situation = html.escape(situation[:50] + '...' if len(situation) > 50 else situation)
         html_content += f"<tr><td>{truncated_situation}</td>"
 
-        situation_scores = []
+        situation_scores: List[float] = []
         for char in characters:
             char_scores = scores[situation][char]
             if char_scores:
@@ -94,7 +95,7 @@ def generate_html(data):
         html_content += f"<td class='average'>{format_score_safe(situation_average)}</td></tr>"
 
     html_content += "<tr><td class='average'>Среднее по персонажу</td>"
-    overall_averages = []
+    overall_averages: List[float] = []
     for char in characters:
         char_average = safe_mean(character_averages[char])
         if not math.isnan(char_average):
@@ -134,7 +135,7 @@ def generate_html(data):
 
 
 # Load JSON data
-with open('../results/claude_3_5_sonnet.json', 'r', encoding='utf-8') as file:
+with open('../results/claude_haiku.json', 'r', encoding='utf-8') as file:
     data = json.load(file)
 
 # Generate HTML
