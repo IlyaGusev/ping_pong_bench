@@ -3,43 +3,47 @@ import html
 from statistics import mean
 import base64
 import math
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any, Union, Optional
 
 
 def safe_mean(lst: List[float]) -> float:
     return mean(lst) if lst else float('nan')
 
 
-def format_score_safe(score: float) -> str:
+def format_score_safe(score: Optional[float]) -> str:
+    if score is None:
+        return "-"
     if math.isnan(score):
         return "NaN"
     return f"{score:.2f}"
 
 
 def generate_html(data: Dict[str, Any]) -> str:
-    characters: List[str] = list(set(output['character']['char_name'] for output in data['outputs']))
-    situations: List[str] = list(set(output['situation']['text'] for output in data['outputs']))
+    characters: List[str] = sorted(set(output['character']['char_name'] for output in data['outputs']))
+    situations: List[str] = sorted(set(output['situation']['text'] for output in data['outputs']))
 
-    grouped_outputs: Dict[str, List[Dict[str, Any]]] = {situation: [] for situation in situations}
+    grouped_outputs: Dict[str, Dict[str, Dict[str, Any]]] = {situation: {} for situation in situations}
     for output in data['outputs']:
-        grouped_outputs[output['situation']['text']].append(output)
+        situation = output['situation']['text']
+        char_name = output['character']['char_name']
+        grouped_outputs[situation][char_name] = output
 
-    scores: Dict[str, Dict[str, List[float]]] = {situation: {char: [] for char in characters} for situation in
-                                                 situations}
+    scores: Dict[str, Dict[str, Optional[float]]] = {situation: {char: None for char in characters} for situation in
+                                                     situations}
     dialogs: Dict[str, List[Dict[str, str]]] = {}
 
-    for situation, outputs in grouped_outputs.items():
-        for output in outputs:
-            char_name = output['character']['char_name']
-
-            if output['scores']:
-                avg_score = safe_mean([
-                    safe_mean(output['scores'].get('stay_in_character', [])),
-                    safe_mean(output['scores'].get('language_fluency', [])),
-                    safe_mean(output['scores'].get('entertainment', []))
-                ])
-                if not math.isnan(avg_score):
-                    scores[situation][char_name].append(avg_score)
+    for situation, char_outputs in grouped_outputs.items():
+        for char_name, output in char_outputs.items():
+            if 'scores' in output:
+                if output['scores']:
+                    avg_score = safe_mean([
+                        safe_mean(output['scores'].get('stay_in_character', [])),
+                        safe_mean(output['scores'].get('language_fluency', [])),
+                        safe_mean(output['scores'].get('entertainment', []))
+                    ])
+                    scores[situation][char_name] = avg_score
+                else:
+                    scores[situation][char_name] = float('nan')
 
             key = base64.b64encode(f"{char_name}::{situation}".encode('utf-8')).decode('utf-8')
             dialogs[key] = output['messages']
@@ -78,31 +82,30 @@ def generate_html(data: Dict[str, Any]) -> str:
 
         situation_scores: List[float] = []
         for char in characters:
-            char_scores = scores[situation][char]
-            if char_scores:
-                avg_score = safe_mean(char_scores)
-                if not math.isnan(avg_score):
-                    character_averages[char].append(avg_score)
-                    situation_scores.append(avg_score)
+            score = scores[situation][char]
+            if score is not None:
+                if not math.isnan(score):
+                    character_averages[char].append(score)
+                    situation_scores.append(score)
                     dialog_key = base64.b64encode(f"{char}::{situation}".encode('utf-8')).decode('utf-8')
-                    html_content += f'<td><a href="#" onclick="showDialog(\'{dialog_key}\')">{format_score_safe(avg_score)}</a></td>'
+                    html_content += f'<td><a href="#" onclick="showDialog(\'{dialog_key}\')">{format_score_safe(score)}</a></td>'
                 else:
-                    html_content += "<td>NaN</td>"
+                    html_content += "<td>REF</td>"
             else:
-                html_content += "<td>NaN</td>"
+                html_content += "<td>-</td>"
 
-        situation_average = safe_mean(situation_scores)
+        situation_average = safe_mean(situation_scores) if situation_scores else None
         html_content += f"<td class='average'>{format_score_safe(situation_average)}</td></tr>"
 
     html_content += "<tr><td class='average'>Среднее по персонажу</td>"
     overall_averages: List[float] = []
     for char in characters:
-        char_average = safe_mean(character_averages[char])
-        if not math.isnan(char_average):
+        char_average = safe_mean(character_averages[char]) if character_averages[char] else None
+        if char_average is not None and not math.isnan(char_average):
             overall_averages.append(char_average)
         html_content += f"<td class='average'>{format_score_safe(char_average)}</td>"
 
-    overall_average = safe_mean(overall_averages)
+    overall_average = safe_mean(overall_averages) if overall_averages else None
     html_content += f"<td class='average'>{format_score_safe(overall_average)}</td></tr>"
 
     html_content += """
@@ -135,7 +138,7 @@ def generate_html(data: Dict[str, Any]) -> str:
 
 
 # Load JSON data
-with open('../results/claude_haiku.json', 'r', encoding='utf-8') as file:
+with open('../results/llama_3_1_70b_instruct.json', 'r', encoding='utf-8') as file:
     data = json.load(file)
 
 # Generate HTML
