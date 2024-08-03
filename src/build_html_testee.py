@@ -1,8 +1,19 @@
 import json
+import math
 from statistics import mean
 import html
 import base64
 import uuid
+
+
+def safe_mean(lst):
+    return mean(lst) if lst else float('nan')
+
+
+def format_score_safe(score):
+    if math.isnan(score):
+        return "NaN"
+    return f"{score:.2f}"
 
 
 def generate_html(data):
@@ -19,14 +30,16 @@ def generate_html(data):
     for situation, outputs in grouped_outputs.items():
         for output in outputs:
             char_name = output['character']['char_name']
-            avg_score = mean([
-                mean(output['scores']['stay_in_character']),
-                mean(output['scores']['language_fluency']),
-                mean(output['scores']['entertainment'])
-            ])
-            scores[situation][char_name].append(avg_score)
 
-            # Save dialog data with base64 encoded key
+            if output['scores']:
+                avg_score = safe_mean([
+                    safe_mean(output['scores'].get('stay_in_character', [])),
+                    safe_mean(output['scores'].get('language_fluency', [])),
+                    safe_mean(output['scores'].get('entertainment', []))
+                ])
+                if not math.isnan(avg_score):
+                    scores[situation][char_name].append(avg_score)
+
             key = base64.b64encode(f"{char_name}::{situation}".encode('utf-8')).decode('utf-8')
             dialogs[key] = output['messages']
 
@@ -66,26 +79,30 @@ def generate_html(data):
         for char in characters:
             char_scores = scores[situation][char]
             if char_scores:
-                avg_score = mean(char_scores)
-                character_averages[char].append(avg_score)
-                situation_scores.append(avg_score)
-                dialog_key = base64.b64encode(f"{char}::{situation}".encode('utf-8')).decode('utf-8')
-                html_content += f'<td><a href="#" onclick="showDialog(\'{dialog_key}\')">{avg_score:.2f}</a></td>'
+                avg_score = safe_mean(char_scores)
+                if not math.isnan(avg_score):
+                    character_averages[char].append(avg_score)
+                    situation_scores.append(avg_score)
+                    dialog_key = base64.b64encode(f"{char}::{situation}".encode('utf-8')).decode('utf-8')
+                    html_content += f'<td><a href="#" onclick="showDialog(\'{dialog_key}\')">{format_score_safe(avg_score)}</a></td>'
+                else:
+                    html_content += "<td>NaN</td>"
             else:
-                html_content += "<td>N/A</td>"
+                html_content += "<td>NaN</td>"
 
-        situation_average = mean(situation_scores) if situation_scores else 0
-        html_content += f"<td class='average'>{situation_average:.2f}</td></tr>"
+        situation_average = safe_mean(situation_scores)
+        html_content += f"<td class='average'>{format_score_safe(situation_average)}</td></tr>"
 
     html_content += "<tr><td class='average'>Среднее по персонажу</td>"
     overall_averages = []
     for char in characters:
-        char_average = mean(character_averages[char]) if character_averages[char] else 0
-        overall_averages.append(char_average)
-        html_content += f"<td class='average'>{char_average:.2f}</td>"
+        char_average = safe_mean(character_averages[char])
+        if not math.isnan(char_average):
+            overall_averages.append(char_average)
+        html_content += f"<td class='average'>{format_score_safe(char_average)}</td>"
 
-    overall_average = mean(overall_averages) if overall_averages else 0
-    html_content += f"<td class='average'>{overall_average:.2f}</td></tr>"
+    overall_average = safe_mean(overall_averages)
+    html_content += f"<td class='average'>{format_score_safe(overall_average)}</td></tr>"
 
     html_content += """
         </table>
@@ -117,7 +134,7 @@ def generate_html(data):
 
 
 # Load JSON data
-with open('../results/gemma-2-27b-it.json', 'r', encoding='utf-8') as file:
+with open('../results/claude_3_5_sonnet.json', 'r', encoding='utf-8') as file:
     data = json.load(file)
 
 # Generate HTML
