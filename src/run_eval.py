@@ -168,8 +168,8 @@ def run_tester(
     output: Optional[TesterOutput] = None
     for _ in range(5):
         try:
-            print(prompt[0]["content"])
-            print(prompt[1]["content"])
+            # print(prompt[0]["content"])
+            # print(prompt[1]["content"])
             result = generate(prompt, provider=provider, temperature=0.1, top_p=0.9)
             print(result)
             print()
@@ -258,10 +258,11 @@ def run_eval(
 
     with tqdm(total=total_iterations, desc="Processing pairs") as pbar:
 
-        index = 0
+        index = -2
         for character in settings.characters:
-            for situation in settings.situations:
+            index += 1
 
+            for situation in settings.situations:
                 index += 1
                 pbar.update(1)
 
@@ -275,6 +276,7 @@ def run_eval(
                         continue
                     try:
                         for turn in range(situation.num_turns + 1):
+                            pbar.set_description(f"Turn {turn}/{situation.num_turns} for situation")
                             output = run_tester(
                                 character=character,
                                 situation=situation,
@@ -284,6 +286,7 @@ def run_eval(
                                 character_prompt_path=settings.character_prompt_path,
                                 provider=tester_provider,
                             )
+
                             if messages:
                                 if output.is_refusal:
                                     has_refusal = True
