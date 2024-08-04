@@ -5,7 +5,7 @@ import base64
 import math
 from typing import List, Dict, Any, Union, Optional
 
-import fire
+import fire # type: ignore
 
 
 def safe_mean(lst: List[float]) -> float:
