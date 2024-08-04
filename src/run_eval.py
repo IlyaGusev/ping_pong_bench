@@ -101,7 +101,7 @@ def generate(messages: ChatMessages, provider: LLMProvider, **kwargs: Any) -> st
     chat_completion = provider.api.chat.completions.create(
         model=provider.model_name, messages=casted_messages, **params
     )
-    return str(chat_completion.choices[0].message.content)
+    return str(chat_completion.choices[0].message.content).strip()
 
 
 def run_testee(
