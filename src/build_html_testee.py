@@ -5,6 +5,8 @@ import base64
 import math
 from typing import List, Dict, Any, Union, Optional
 
+import fire
+
 
 def safe_mean(lst: List[float]) -> float:
     return mean(lst) if lst else float('nan')
@@ -137,15 +139,24 @@ def generate_html(data: Dict[str, Any]) -> str:
     return html_content
 
 
-# Load JSON data
-with open('../results/llama_3_1_70b_instruct.json', 'r', encoding='utf-8') as file:
-    data = json.load(file)
 
-# Generate HTML
-html_output = generate_html(data)
+def run_build_html(
+    json_path: str,
+    output_path: str,
+) -> None:
+    # Load JSON data
+    with open(json_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
 
-# Write HTML to file
-with open('../output.html', 'w', encoding='utf-8') as file:
-    file.write(html_output)
+    # Generate HTML
+    html_output = generate_html(data)
 
-print("HTML file 'output.html' has been generated.")
+    # Write HTML to file
+    with open(output_path, 'w', encoding='utf-8') as file:
+        file.write(html_output)
+
+    print("HTML file 'output.html' has been generated.")
+
+
+if __name__ == "__main__":
+    fire.Fire(run_build_html)
