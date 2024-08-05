@@ -16,6 +16,7 @@ class LLMProvider:
         base_url: str,
         api_key: str,
         system_prompt: str = "",
+        merge_system: bool = False,
         params: Dict[str, Any] = DEFAULT_PARAMS,
         **kwargs: Any
     ) -> None:
@@ -23,6 +24,7 @@ class LLMProvider:
         self.system_prompt = system_prompt
         self.api = OpenAI(base_url=base_url, api_key=api_key)
         self.params = params
+        self.merge_system = merge_system
         for k, v in DEFAULT_PARAMS.items():
             if k not in self.params:
                 self.params[k] = v

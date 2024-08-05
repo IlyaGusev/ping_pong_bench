@@ -97,6 +97,12 @@ def generate(messages: ChatMessages, provider: LLMProvider, **kwargs: Any) -> st
     if provider.system_prompt != "" and messages_copy[0]["role"] == "system":
         messages_copy[0]["content"] = provider.system_prompt + "\n\n" + messages_copy[0]["content"]
 
+    if provider.merge_system and messages_copy[0]["role"] == "system":
+        system_content = messages_copy[0]["content"]
+        user_content = messages_copy[1]["content"]
+        messages_copy = messages_copy[1:]
+        messages_copy[0]["content"] = f"{system_content}\n\nВопрос пользователя: {user_content}"
+
     casted_messages = [cast(ChatCompletionMessageParam, message) for message in messages_copy]
     chat_completion = provider.api.chat.completions.create(
         model=provider.model_name, messages=casted_messages, **params
