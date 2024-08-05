@@ -51,26 +51,17 @@ def generate_html(data: Dict[str, Any]) -> str:
             dialogs[key] = output['messages']
 
     html_content = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Character Scores and Dialogs</title>
-        <style>
-            table { border-collapse: collapse; width: 100%; }
-            th, td { border: 1px solid black; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-            .average { font-weight: bold; background-color: #e6e6e6; }
-            .dialog { margin-top: 20px; border: 1px solid #ddd; padding: 10px; }
-            .user { color: blue; }
-            .assistant { color: green; }
-        </style>
-    </head>
-    <body>
-        <table id="scoreTable">
-            <tr>
-                <th>Situation</th>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        .average { font-weight: bold; }
+        .dialog { margin-top: 20px; border: 1px solid #ddd; padding: 10px; }
+        .user { color: #6a9fb5; }
+        .assistant { color: #90a959; }
+    </style>
+    <table id="scoreTable">
+        <tr>
+            <th>Situation</th>
     """
 
     for char in characters:
@@ -90,7 +81,7 @@ def generate_html(data: Dict[str, Any]) -> str:
                     character_averages[char].append(score)
                     situation_scores.append(score)
                     dialog_key = base64.b64encode(f"{char}::{situation}".encode('utf-8')).decode('utf-8')
-                    html_content += f'<td><a href="#" onclick="showDialog(\'{dialog_key}\')">{format_score_safe(score)}</a></td>'
+                    html_content += f'<td><a href="#" onclick="showDialog(event, \'{dialog_key}\')">{format_score_safe(score)}</a></td>'
                 else:
                     html_content += "<td>REF</td>"
             else:
@@ -119,7 +110,9 @@ def generate_html(data: Dict[str, Any]) -> str:
     html_content += json.dumps(dialogs)
 
     html_content += """
-        function showDialog(key) {
+        function showDialog(e, key) {
+            e = e || window.event;
+            e.preventDefault();
             const dialog = dialogs[key];
             if (!dialog) {
                 document.getElementById('dialogContainer').innerHTML = 'Dialog not found';
@@ -132,8 +125,6 @@ def generate_html(data: Dict[str, Any]) -> str:
             document.getElementById('dialogContainer').innerHTML = dialogHtml;
         }
         </script>
-    </body>
-    </html>
     """
 
     return html_content
@@ -155,7 +146,7 @@ def run_build_html(
     with open(output_path, 'w', encoding='utf-8') as file:
         file.write(html_output)
 
-    print("HTML file 'output.html' has been generated.")
+    print(f"HTML file '{output_path}' has been generated.")
 
 
 if __name__ == "__main__":

@@ -8,10 +8,14 @@ from statistics import mean
 import pandas as pd  # type: ignore
 from tabulate import tabulate
 
+from src.build_html_testee import generate_html
 
-def build_table(results_dir: str, output_path: Optional[str] = None) -> None:
+
+def build_table(results_dir: str, output_path: Optional[str] = None, dialogues_path: Optional[str] = None) -> None:
     records = []
     for file_name in os.listdir(results_dir):
+        if not file_name.endswith(".json"):
+            continue
         file_path = Path(os.path.join(results_dir, file_name))
         model_name = file_path.stem
         with open(file_path, encoding="utf-8") as r:
@@ -19,7 +23,7 @@ def build_table(results_dir: str, output_path: Optional[str] = None) -> None:
         outputs = result.pop("outputs")
         result["num_situations"] = len(outputs)
         result["avg_length"] = int(mean([len(m["content"]) for o in outputs for m in o["messages"] if m["role"] == "assistant"]))
-        result["model_name"] = model_name
+        result["model_name"] = f"[{model_name}]({{{{ '/results/{model_name}' | relative_url}}}})"
         records.append(result)
     columns = [
         "model_name",
@@ -59,6 +63,18 @@ def build_table(results_dir: str, output_path: Optional[str] = None) -> None:
         table = "# Results\n\n" + table
         with open(output_path, "w") as w:
             w.write(table)
+    if dialogues_path:
+        for file_name in os.listdir(results_dir):
+            if not file_name.endswith(".json"):
+                continue
+            input_path = os.path.join(results_dir, file_name)
+            output_path = os.path.join(dialogues_path, file_name.replace(".json", ".html"))
+            with open(input_path) as r:
+                data = json.load(r)
+            html = generate_html(data)
+            html = "---\nlayout: default\n---" + html
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(html)
 
 
 if __name__ == "__main__":
