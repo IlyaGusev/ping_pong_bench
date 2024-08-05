@@ -39,7 +39,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Build report
-        run: python3 -m src.build_table results pages/index.md
+        run: python3 -m src.build_table results pages/index.md pages/results
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
