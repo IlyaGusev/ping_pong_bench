@@ -99,7 +99,7 @@
         }
     ],
     "version": 3,
-    "system_prompt_path": "templates/system.jinja",
+    "system_prompt_path": "templates/system_v2.jinja",
     "user_prompt_path": "templates/user_v2.jinja",
     "character_prompt_path": "templates/character.jinja"
 }
