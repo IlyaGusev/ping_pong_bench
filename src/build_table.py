@@ -11,7 +11,9 @@ from tabulate import tabulate
 from src.build_html_testee import generate_html
 
 
-def build_table(results_dir: str, output_path: Optional[str] = None, dialogues_path: Optional[str] = None) -> None:
+def build_table(
+    results_dir: str, output_path: Optional[str] = None, dialogues_path: Optional[str] = None
+) -> None:
     records = []
     for file_name in os.listdir(results_dir):
         if not file_name.endswith(".json"):
@@ -22,7 +24,16 @@ def build_table(results_dir: str, output_path: Optional[str] = None, dialogues_p
             result = json.load(r)
         outputs = result.pop("outputs")
         result["num_situations"] = len(outputs)
-        result["avg_length"] = int(mean([len(m["content"]) for o in outputs for m in o["messages"] if m["role"] == "assistant"]))
+        result["avg_length"] = int(
+            mean(
+                [
+                    len(m["content"])
+                    for o in outputs
+                    for m in o["messages"]
+                    if m["role"] == "assistant"
+                ]
+            )
+        )
         result["model_name"] = f"[{model_name}]({{{{ '/results/{model_name}' | relative_url}}}})"
         records.append(result)
     columns = [
@@ -33,7 +44,7 @@ def build_table(results_dir: str, output_path: Optional[str] = None, dialogues_p
         "language_fluency_score",
         "entertainment_score",
         "num_situations",
-        "avg_length"
+        "avg_length",
     ]
     pd.set_option("display.precision", 2)
 
@@ -73,7 +84,7 @@ def build_table(results_dir: str, output_path: Optional[str] = None, dialogues_p
                 data = json.load(r)
             html = generate_html(data)
             html = "---\nlayout: default\n---" + html
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 f.write(html)
 
 

@@ -166,7 +166,10 @@ def run_tester(
 ) -> TesterOutput:
     char_description = encode_prompt(character_prompt_path, character=character)
     user_prompt = encode_prompt(
-        user_prompt_path, char_description=char_description, situation=situation.text, messages=messages
+        user_prompt_path,
+        char_description=char_description,
+        situation=situation.text,
+        messages=messages,
     )
     prompt = [
         {"role": "system", "content": encode_prompt(system_prompt_path)},
@@ -238,7 +241,7 @@ def run_eval(
     output_path: str,
     testee_name: str,
     tester_name: str,
-    every_x: int = 1
+    every_x: int = 1,
 ) -> None:
     with open(providers_path, encoding="utf-8") as r:
         providers = {name: LLMProvider(**provider) for name, provider in json.load(r).items()}
@@ -271,7 +274,7 @@ def run_eval(
                 index += 1
                 pbar.update(1)
 
-                if index % every_x == 0: # process every X situation
+                if index % every_x == 0:  # process every X situation
                     messages: ChatMessages = []
                     scores: Dict[str, List[int]] = defaultdict(list)
                     has_refusal = False
@@ -330,8 +333,6 @@ def run_eval(
                         testee_provider=testee_provider,
                         version=settings.version,
                     )
-
-
 
 
 if __name__ == "__main__":
