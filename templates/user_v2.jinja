@@ -4,36 +4,30 @@ A bot pretends to be the following character:
 {{char_description}}
 </character_description>
 
-<instructions>
-Generate the next user utterance and evaluate bot answers based on the following criteria:
-- Language fluency: Does the bot use the correct word gender, cases, orthography, punctuation, etc.? Does it sound fluent? Do the sentences make perfect sense? Penalize heavily for any non-existing words, any random words in other languages (for instance, random English words in Russian text), wrong words, wrong word genders or cases, awkward phrasing. Consider any of these mistakes as significant and set the score below 5.
-- Staying in character: Do bot utterances correspond to the character description? Is there anything contradictory to the character description? Penalize heavily for any cotradictions to the character description.
-- Entertaining: Are bot answers entertaining? Penalize heavily for any repetitions: if the bot uses the identical phrase several times, consider it as a significant mistake.
+Generate the next user utterance and evaluate how good a bot is in:
+- staying in character: Do bot utterances correspond to the character description? Is there anything contradictory to the character description in the bot's answers?
+- language fluency: Does the bot use the correct word gender, cases, spelling? Do not allow any non-existing words in the bot's answers or words in a different language from the language in the character description. Do the bot's answers sound fluent? For instance, unnatural constructions such as "как я их здесь попала?" in Russian or "I eated an apple" in English should be severely penalized.
+- entertaining: Are the bot's answers entertaining? Are there any repetitions?
 
-Rules:
-- Do not evaluate utterances marked as "system" or "user" or utterances inside the character description.
-- Decouple the scores: it is possible that the model is not fluent in a language but very entertaining or vice versa.
-- Use a scale between 1 and 10. Explain scores before setting them. If the bot answers are standard without significant mistakes, mark them as 5. If the answers are exceptional, mark them as 8. If the answers are absolutely perfect, mark them as 10.
-- Do not evaluate whether the bot is rude or violent.
+Do not evaluate answers marked as "user". Use a scale between 1 and 10. Explain scores before setting them. Explanations should be in the same language as the character description. If the bot's answers are standard without significant mistakes, mark them as 5. If the answers are exceptional, mark them as 8. If the answers are absolutely perfect, mark them as 10. Do not evaluate whether the bot is rude or violent.
 
-If the bot refuses to engage in a dialog or says it can not continue the conversation, set "is_refusal" to true.
+If the bot refuses to engage in a dialog or says that it can not continue, set "is_refusal" to true.
 
-Follow this situation throughout the conversation: "{{situation}}".
+Follow this situation: "{{situation}}".
 
-Return the result in the JSON using the following format:
+Return the result in JSON with the following format:
 {
-    "language_fluency_explanation": "...",
-    "language_fluency_score": 5,
-    "stay_in_character_explanation": "...",
-    "stay_in_character_score": 5,
-    "entertainment_explanation": "...",
-    "entertainment_score": 5,
+    "next_user_utterance": "...",
     "is_refusal_explanation": "...",
     "is_refusal": false,
-    "next_user_utterance": "...",
+    "stay_in_character_explanation": "...",
+    "stay_in_character_score": 5,
+    "language_fluency_explanation": "...",
+    "language_fluency_score": 5,
+    "entertainment_explanation": "...",
+    "entertainment_score": 5,
 }
 Always return a correct JSON!
-</instructions>
 
 <conversation>
 {% for message in messages %}
@@ -41,4 +35,4 @@ Always return a correct JSON!
 {% endfor %}
 </conversation>
 
-Your answer with a correct JSON:
+The correct JSON:
