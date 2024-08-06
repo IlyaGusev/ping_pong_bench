@@ -123,6 +123,7 @@ def run_testee(
         try:
             for m in messages:
                 print(f'{m["role"]}: {m["content"]}')
+                print()
             print()
             output = generate(
                 provider=provider,
@@ -174,8 +175,6 @@ def run_tester(
     output: Optional[TesterOutput] = None
     for _ in range(5):
         try:
-            # print(prompt[0]["content"])
-            # print(prompt[1]["content"])
             result = generate(prompt, provider=provider, temperature=0.1, top_p=0.9)
             print(result)
             print()
