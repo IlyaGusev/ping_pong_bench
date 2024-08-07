@@ -44,7 +44,7 @@ def build_table(
     score_range = max_score - min_score
     for record in records:
         x = median_length - record["avg_length"]
-        coef = np.tanh(x / (median_length * 2))
+        coef = np.tanh(x / (median_length * 3))
         diff = score_range * min(0, coef)
         record["length_norm_score"] = record["final_score"] + diff
 
