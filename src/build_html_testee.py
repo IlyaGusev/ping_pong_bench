@@ -1,8 +1,8 @@
 import json
 import html
-from statistics import mean
 import base64
 import math
+from statistics import mean
 from typing import List, Dict, Any, Union, Optional
 
 import fire  # type: ignore
@@ -37,7 +37,7 @@ def generate_html(data: Dict[str, Any]) -> str:
     scores: Dict[str, Dict[str, Optional[float]]] = {
         situation: {char: None for char in characters} for situation in situations
     }
-    dialogs: Dict[str, List[Dict[str, str]]] = {}
+    dialogs: Dict[str, Any] = {}
 
     for situation, char_outputs in grouped_outputs.items():
         for char_name, output in char_outputs.items():
@@ -55,11 +55,11 @@ def generate_html(data: Dict[str, Any]) -> str:
                     scores[situation][char_name] = float("nan")
 
             key = base64.b64encode(f"{char_name}::{situation}".encode("utf-8")).decode("utf-8")
-            dialogs[key] = output["messages"]
+            dialogs[key] = {"messages": output["messages"], "character": char_name, "situation": situation}
 
     html_content = """
     <style>
-        h2 { margin: 10px 0px 10px; }
+        h3 { margin: 10px 0px 10px; }
         table { border-collapse: collapse; width: 100%; }
         th, td { border: 1px solid black; padding: 8px; text-align: left; }
         .average { font-weight: bold; }
@@ -69,11 +69,11 @@ def generate_html(data: Dict[str, Any]) -> str:
     </style>
     """
 
-    html_content += "<h2>Tester</h2><code>" + json.dumps(data["tester"]) + "</code>"
-    html_content += "<h2>Testee</h2><code>" + json.dumps(data["testee"]) + "</code>"
+    html_content += "<h3>Tester</h3><code>" + json.dumps(data["tester"], ensure_ascii=False) + "</code>"
+    html_content += "<h3>Testee</h3><code>" + json.dumps(data["testee"], ensure_ascii=False) + "</code>"
 
     html_content += """
-    <h2>Scores</h2>
+    <h3>Scores</h3>
     <table id="scoreTable">
         <tr>
             <th>Situation</th>
@@ -122,7 +122,7 @@ def generate_html(data: Dict[str, Any]) -> str:
 
     html_content += """
         </table>
-        <div id="dialogContainer" class="dialog"></div>
+        <div id="dialogContainer" class="dialog" hidden></div>
         <script>
         const dialogs = """
 
@@ -132,16 +132,21 @@ def generate_html(data: Dict[str, Any]) -> str:
         function showDialog(e, key) {
             e = e || window.event;
             e.preventDefault();
-            const dialog = dialogs[key];
+            const dialog = dialogs[key]["messages"];
             if (!dialog) {
                 document.getElementById('dialogContainer').innerHTML = 'Dialog not found';
                 return;
             }
-            let dialogHtml = '<h3>Dialog</h3>';
+            let dialogHtml = '';
+            dialogHtml += '<p>Character: ' + dialogs[key]["character"] + '</p>';
+            dialogHtml += '<p>Situation: ' + dialogs[key]["situation"] + '</p>';
+            dialogHtml += '<h3>Dialog</h3>';
             for (const message of dialog) {
                 dialogHtml += '<p class="' + message.role + '"><strong>' + message.role + ':</strong> ' + message.content + '</p>';
             }
             document.getElementById('dialogContainer').innerHTML = dialogHtml;
+            document.getElementById('dialogContainer').removeAttribute("hidden");
+            document.getElementById('dialogContainer').scrollIntoView();
         }
         </script>
     """

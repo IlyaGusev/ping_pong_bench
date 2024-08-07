@@ -1,12 +1,13 @@
 import os
 import fire  # type: ignore
 import json
-from typing import Optional
+from typing import Optional, List
 from pathlib import Path
-from statistics import mean
+from statistics import mean, median
 
 import pandas as pd  # type: ignore
 from tabulate import tabulate
+import numpy as np
 
 from src.build_html_testee import generate_html
 
@@ -36,9 +37,21 @@ def build_table(
         )
         result["model_name"] = f"[{model_name}]({{{{ '/results/{model_name}' | relative_url}}}})"
         records.append(result)
+
+    median_length = median([r["avg_length"] for r in records])
+    min_score = min([r["final_score"] for r in records])
+    max_score = max([r["final_score"] for r in records])
+    score_range = max_score - min_score
+    for record in records:
+        x = median_length - record["avg_length"]
+        coef = np.tanh(x / (median_length * 2))
+        diff = score_range * min(0, coef)
+        record["length_norm_score"] = record["final_score"] + diff
+
     columns = [
         "model_name",
         "final_score",
+        "length_norm_score",
         "refusal_ratio",
         "stay_in_character_score",
         "language_fluency_score",
@@ -71,7 +84,6 @@ def build_table(
     # print(table)
 
     if output_path:
-        table = "# Results\n\n" + table
         with open(output_path, "w") as w:
             w.write(table)
     if dialogues_path:
