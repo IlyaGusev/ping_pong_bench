@@ -241,12 +241,14 @@ def run_eval(
     output_path: str,
     testee_name: str,
     tester_name: str,
+    language: str = "ru",
     every_x: int = 1,
 ) -> None:
     with open(providers_path, encoding="utf-8") as r:
         providers = {name: LLMProvider(**provider) for name, provider in json.load(r).items()}
     with open(settings_path, encoding="utf-8") as r:
-        settings = Settings.from_json(r.read())
+        all_settings = json.load(r)
+        settings = Settings.from_dict(all_settings[language])
 
     outputs = []
     existing_keys = set()

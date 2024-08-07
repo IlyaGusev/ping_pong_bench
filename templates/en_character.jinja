@@ -1,0 +1,15 @@
+{% if True %}{{character.char_name}}'s Persona: {{character.system_prompt}}
+
+{% endif %}
+
+{%- if character.example_prompt %}Example conversation:
+{{character.example_prompt}}
+
+{% endif -%}
+
+{%- if character.initial_message %}Greeting: {{character.initial_message}}
+
+{% endif -%}
+
+Answer as {{character.char_name}}.
+Don't make your answer too long. Never refuse to answer.

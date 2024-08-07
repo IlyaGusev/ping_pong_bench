@@ -35,7 +35,8 @@ def build_table(
                 ]
             )
         )
-        result["model_name"] = f"[{model_name}]({{{{ '/results/{model_name}' | relative_url}}}})"
+        results_dir = results_dir.rstrip("/").lstrip("/")
+        result["model_name"] = f"[{model_name}]({{{{ '/{results_dir}/{model_name}' | relative_url}}}})"
         records.append(result)
 
     median_length = median([r["avg_length"] for r in records])
@@ -78,11 +79,6 @@ def build_table(
 
     # Create the table using tabulate
     table = tabulate(table_data, headers="firstrow", tablefmt="github", floatfmt=".2f")
-
-    # Output table in Github MD format
-    # print("\n----- Github MD format -----\n")
-    # print(table)
-
     if output_path:
         with open(output_path, "w") as w:
             w.write(table)
