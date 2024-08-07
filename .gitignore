@@ -162,3 +162,7 @@ cython_debug/
 #.idea/
 
 providers.json
+pages/results/ru/*.html
+pages/results/en/*.html
+pages/ru.md
+pages/en.md
