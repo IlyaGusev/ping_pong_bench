@@ -1,3 +1,4 @@
 results/*.json filter=lfs diff=lfs merge=lfs -text
+results/*.jsonl filter=lfs diff=lfs merge=lfs -text
 results/ru/*.json filter=lfs diff=lfs merge=lfs -text
 results/en/*.json filter=lfs diff=lfs merge=lfs -text
