@@ -1,17 +1,29 @@
 import json
 import sys
 import shutil
+from typing import Dict, Any, Type, Optional, cast
 
 from textual import on, events, work
-from textual.app import App, ComposeResult, Binding
-from textual.widgets import Header, Footer, MarkdownViewer, Static, Input, Label, RadioButton, RadioSet, Button
+from textual.app import App, ComposeResult
+from textual.binding import Binding
+from textual.widgets import (
+    Header,
+    Footer,
+    MarkdownViewer,
+    Static,
+    Input,
+    Label,
+    RadioButton,
+    RadioSet,
+    Button,
+)
 from textual.widget import Widget
 from textual.validation import Number
 from textual.containers import Container, Grid, Vertical
 from textual.screen import ModalScreen
 
 
-def to_markdown(record):
+def to_markdown(record: Dict[str, Any]) -> str:
     result = ""
     messages = record["messages"]
     for m in messages:
@@ -21,7 +33,7 @@ def to_markdown(record):
     return result
 
 
-def to_meta(record):
+def to_meta(record: Dict[str, Any]) -> str:
     meta = {k: v for k, v in record.items() if k != "messages"}
     result = []
     for k, v in meta.items():
@@ -46,9 +58,15 @@ class RateScreen(ModalScreen[bool]):
         with Vertical(id="rate_dialog"):
             yield Label("Bot Interaction Rating", id="title")
             questions = (
-                ("in_character", "The bot consistently maintained its assigned character or persona."),
+                (
+                    "in_character",
+                    "The bot consistently maintained its assigned character or persona.",
+                ),
                 ("entertaining", "The bot's responses were engaging and entertaining."),
-                ("fluency", "The bot's language use was of high quality without major mistakes or generation errors."),
+                (
+                    "fluency",
+                    "The bot's language use was of high quality without major mistakes or generation errors.",
+                ),
             )
             for set_id, question in questions:
                 yield Label(question)
@@ -58,7 +76,7 @@ class RateScreen(ModalScreen[bool]):
                     RadioButton("3. Neutral"),
                     RadioButton("4. Agree"),
                     RadioButton("5. Strongly agree"),
-                    id=set_id
+                    id=set_id,
                 )
             with Vertical(id="button_row"):
                 yield Button("Submit", variant="primary", id="submit")
@@ -66,10 +84,12 @@ class RateScreen(ModalScreen[bool]):
     def action_select(self, number: int) -> None:
         current_radioset = self.get_current_focus()
         if isinstance(current_radioset, RadioSet):
-            current_radioset.children[number - 1].toggle()
+            button = current_radioset.children[number - 1]
+            assert isinstance(button, RadioButton)
+            button.toggle()
             self.focus_next()
 
-    def get_current_focus(self) -> Widget:
+    def get_current_focus(self) -> Optional[Widget]:
         for widget_id in ["in_character", "entertaining", "fluency", "submit"]:
             widget = self.query_one(f"#{widget_id}")
             if widget.has_focus:
@@ -80,22 +100,22 @@ class RateScreen(ModalScreen[bool]):
         if event.button.id == "submit":
             self.dismiss(True)
 
-    def get_ratings(self) -> None:
-        in_character = str(self.query_one("#in_character").pressed_button.label)[0]
-        entertaining = str(self.query_one("#entertaining").pressed_button.label)[0]
-        fluency = str(self.query_one("#fluency").pressed_button.label)[0]
-        return {
-            "in_character": int(in_character),
-            "entertaining": int(entertaining),
-            "fluency": int(fluency)
-        }
-
+    def get_ratings(self) -> Dict[str, int]:
+        ids = ("in_character", "entertaining", "fluency")
+        labels = []
+        for i in ids:
+            radio_set = cast(RadioSet, self.query_one("#" + i))
+            button = radio_set.pressed_button
+            assert button is not None
+            label = int(str(button.label)[0])
+            labels.append(label)
+        return {i: l for i, l in zip(ids, labels)}
 
     def is_visible(self) -> bool:
         return self.app.screen is self
 
 
-class Browser(App):
+class Browser(App[None]):
     CSS_PATH = "browser.tcss"
     BINDINGS = [
         ("q", "quit", "Quit"),
@@ -114,13 +134,11 @@ class Browser(App):
             self.records = [json.loads(line) for line in r]
         yield Header()
         yield Static("", id="meta")
-        yield Container(
-            MarkdownViewer(),
-            Static("Loading...", id="loading"),
-            id="main-content"
-        )
+        yield Container(MarkdownViewer(), Static("Loading...", id="loading"), id="main-content")
         yield Static("", id="counter")
-        yield Input(placeholder="Enter index", validators=[Number()], restrict="[0-9]*", valid_empty=True)
+        yield Input(
+            placeholder="Enter index", validators=[Number()], restrict="[0-9]*", valid_empty=True
+        )
         yield Footer()
 
     @property
@@ -137,11 +155,11 @@ class Browser(App):
 
     @property
     def meta_info(self) -> Static:
-        return self.query_one("#meta")
+        return cast(Static, self.query_one("#meta"))
 
     @property
     def counter(self) -> Static:
-        return self.query_one("#counter")
+        return cast(Static, self.query_one("#counter"))
 
     @property
     def input(self) -> Input:
@@ -149,9 +167,9 @@ class Browser(App):
 
     @property
     def loading_indicator(self) -> Static:
-        return self.query_one("#loading")
+        return cast(Static, self.query_one("#loading"))
 
-    async def show_record(self):
+    async def show_record(self) -> None:
         if len(self.records) == 0:
             await self.markdown_viewer.document.update("No records left")
             self.counter.update("No records")
@@ -167,7 +185,7 @@ class Browser(App):
         await self.markdown_viewer.document.update(to_markdown(record))
         self.counter.update(f"Record {self.current_idx + 1} of {len(self.records)}")
 
-        def show_markdown():
+        def show_markdown() -> None:
             self.markdown_viewer.focus()
             self.markdown_viewer.display = True
             self.loading_indicator.display = False
@@ -181,7 +199,9 @@ class Browser(App):
     @on(Input.Submitted)
     async def goto(self, event: Input.Submitted) -> None:
         if not event.validation_result or not event.validation_result.is_valid:
-            self.notify("Invalid index. Please enter a number between 1 and {}.".format(len(self.records)))
+            self.notify(
+                "Invalid index. Please enter a number between 1 and {}.".format(len(self.records))
+            )
             return
 
         input_value = self.input.value
@@ -190,7 +210,9 @@ class Browser(App):
             self.current_idx = index
             await self.show_record()
         else:
-            self.notify("Invalid index. Please enter a number between 1 and {}.".format(len(self.records)))
+            self.notify(
+                "Invalid index. Please enter a number between 1 and {}.".format(len(self.records))
+            )
         self.input.clear()
 
     async def action_back(self) -> None:
@@ -217,12 +239,15 @@ class Browser(App):
             validation_result = self.input.validate(self.input.value)
             self.post_message(self.input.Submitted(self.input, self.input.value, validation_result))
 
-    def is_screen_active(self, screen_class):
-        return any(isinstance(screen, screen_class) for screen in self.screen_stack)
+    def is_rate_screen_active(self) -> bool:
+        return any(isinstance(screen, RateScreen) for screen in self.screen_stack)
 
     def on_key(self, event: events.Key) -> None:
-        is_rate_screen_active = self.is_screen_active(RateScreen)
-        if not is_rate_screen_active and event.key in "1234567890" and not self.input.has_focus:
+        if (
+            not self.is_rate_screen_active()
+            and event.key in "1234567890"
+            and not self.input.has_focus
+        ):
             self.input.focus()
             self.input.value = event.key
 

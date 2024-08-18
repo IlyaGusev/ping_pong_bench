@@ -36,7 +36,9 @@ def build_table(
             )
         )
         results_dir = results_dir.rstrip("/").lstrip("/")
-        result["model_name"] = f"[{model_name}]({{{{ '/{results_dir}/{model_name}' | relative_url}}}})"
+        result["model_name"] = (
+            f"[{model_name}]({{{{ '/{results_dir}/{model_name}' | relative_url}}}})"
+        )
         records.append(result)
 
     median_length = median([r["avg_length"] for r in records])
