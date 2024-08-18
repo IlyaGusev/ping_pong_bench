@@ -55,7 +55,11 @@ def generate_html(data: Dict[str, Any]) -> str:
                     scores[situation][char_name] = float("nan")
 
             key = base64.b64encode(f"{char_name}::{situation}".encode("utf-8")).decode("utf-8")
-            dialogs[key] = {"messages": output["messages"], "character": char_name, "situation": situation}
+            dialogs[key] = {
+                "messages": output["messages"],
+                "character": char_name,
+                "situation": situation,
+            }
 
     html_content = """
     <style>
@@ -69,8 +73,12 @@ def generate_html(data: Dict[str, Any]) -> str:
     </style>
     """
 
-    html_content += "<h3>Tester</h3><code>" + json.dumps(data["tester"], ensure_ascii=False) + "</code>"
-    html_content += "<h3>Testee</h3><code>" + json.dumps(data["testee"], ensure_ascii=False) + "</code>"
+    html_content += (
+        "<h3>Tester</h3><code>" + json.dumps(data["tester"], ensure_ascii=False) + "</code>"
+    )
+    html_content += (
+        "<h3>Testee</h3><code>" + json.dumps(data["testee"], ensure_ascii=False) + "</code>"
+    )
 
     html_content += """
     <h3>Scores</h3>
