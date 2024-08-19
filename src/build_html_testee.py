@@ -41,7 +41,9 @@ def generate_html(data: Dict[str, Any]) -> str:
 
     for situation, char_outputs in grouped_outputs.items():
         for char_name, output in char_outputs.items():
-            if "scores" in output:
+            if "has_refusal" in output and output["has_refusal"]:
+                scores[situation][char_name] = float("nan")
+            elif "scores" in output:
                 if output["scores"]:
                     avg_score = safe_mean(
                         [
