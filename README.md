@@ -1,6 +1,8 @@
 # PingPong benchmark
 
-PingPong is a benchmark for role-playing LLMs. 
+PingPong is a benchmark for role-playing LLMs.
+
+Website: [link](https://ilyagusev.github.io/ping_pong_bench/)
 
 [LLM-as-a-Judge](https://arxiv.org/abs/2306.05685) is an evaluation method that relies on solid LLMs such as GPT-4 instead of humans. In this benchmark, we rely on LLMs not only to judge the answer but also to ask the questions.
 
