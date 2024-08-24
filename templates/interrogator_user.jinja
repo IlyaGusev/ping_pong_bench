@@ -1,0 +1,19 @@
+You are speaking with the following player: "{{char_summary}}"
+
+Imagine that you are an internet user and generate the next user utterance in the conversation with this player.
+
+Follow this situation: "{{situation}}".
+
+Return the result in JSON with the following format:
+{
+    "next_utterance": "...",
+}
+
+Always return a correct JSON!
+
+Conversation:
+{% for message in messages %}
+{{message.role}}: {{message.content}}
+{% endfor %}
+
+The correct JSON:

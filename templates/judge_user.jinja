@@ -1,0 +1,52 @@
+Evaluate the player's answers.
+
+Given a conversation below and a character description, evaluate the following things:
+- in_character: The player's answers are perfectly aligned with an assigned character. They correspond to the character's description. There is nothing contradictory to the character description.
+- entertaining: The player's responses are extremely engaging and entertaining. The player is not repeating phrases.
+- fluency: The player's language use is of the highest quality, without any mistakes or errors. The player is perfectly fluent. There is no awkward phrasing, and the player always uses the correct word forms, word gender, cases, orthography, punctuation, etc. The player never uses non-existing words or words in a language different from the character description.
+
+Use the Likert scale with the following options:
+- 1. Strongly disagree
+- 2. Disagree
+- 3. Neither agree nor disagree
+- 4. Agree
+- 5. Strongly agree
+
+Do not evaluate answers marked as "user".
+Evaluate all player's answers, not only the last one. Evaluate every turn separately.
+Explain scores before setting them.
+Start explanations with quotes from the player's answers. Use single quotation marks for quotes. Focus on problems and mistakes.
+Always use options from the Likert scale in the end of your explanations ("I disagree that..."). Scores should correspond to these explanations.
+Do not evaluate whether the player is rude or violent.
+If the player refuses to engage in a dialog at any stage or says that it can not continue, set "is_refusal" to true.
+
+Return the result in JSON with the following format:
+{
+    "scores": [
+        {
+            "turn": 1,
+            "is_refusal_explanation": "...",
+            "is_refusal": false,
+            "in_character_explanation": "...",
+            "in_character_score": 3,
+            "entertaining_explanation": "...",
+            "entertaining_score": 3,
+            "fluency_explanation": "...",
+            "fluency_score": 1
+        }
+    ]
+}
+
+Always return a correct JSON!
+
+A player pretends to be the following character:
+{{char_description}}
+
+Conversation:
+{% for message in messages %}
+{% if loop.index % 2 == 1%}
+Turn {{(loop.index + 1) // 2}}:
+{% endif %}{{message.role}}: {{message.content}}
+{% endfor %}
+
+The correct JSON:

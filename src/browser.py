@@ -60,12 +60,15 @@ class RateScreen(ModalScreen[bool]):
             questions = (
                 (
                     "in_character",
-                    "The bot consistently maintained its assigned character or persona.",
+                    "The bot's answers are perfectly aligned with an assigned character",
                 ),
-                ("entertaining", "The bot's responses were engaging and entertaining."),
+                (
+                    "entertaining",
+                    "The bot's responses are extremely engaging and entertaining",
+                ),
                 (
                     "fluency",
-                    "The bot's language use was of high quality without major mistakes or generation errors.",
+                    "The bot's language use is of the highest quality, without any mistakes"
                 ),
             )
             for set_id, question in questions:
