@@ -68,7 +68,7 @@ class RateScreen(ModalScreen[bool]):
                 ),
                 (
                     "fluency",
-                    "The bot's language use is of the highest quality, without any mistakes"
+                    "The bot's language use is of the highest quality, without any mistakes",
                 ),
             )
             for set_id, question in questions:

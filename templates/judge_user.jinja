@@ -1,6 +1,13 @@
+A player pretends to be the following character:
+=====
+
+{{char_description}}
+
+=====
+
 Evaluate the player's answers.
 
-Given a conversation below and a character description, evaluate the following things:
+Given a conversation below and a given character description, evaluate the following things:
 - in_character: The player's answers are perfectly aligned with an assigned character. They correspond to the character's description. There is nothing contradictory to the character description.
 - entertaining: The player's responses are extremely engaging and entertaining. The player is not repeating phrases.
 - fluency: The player's language use is of the highest quality, without any mistakes or errors. The player is perfectly fluent. There is no awkward phrasing, and the player always uses the correct word forms, word gender, cases, orthography, punctuation, etc. The player never uses non-existing words or words in a language different from the character description.
@@ -39,14 +46,11 @@ Return the result in JSON with the following format:
 
 Always return a correct JSON!
 
-A player pretends to be the following character:
-{{char_description}}
-
 Conversation:
 {% for message in messages %}
 {% if loop.index % 2 == 1%}
 Turn {{(loop.index + 1) // 2}}:
-{% endif %}{{message.role}}: {{message.content}}
+{% endif %}{% if message.role == "assistant"%}player{% else %}{{message.role}}{% endif %}: {{message.content}}
 {% endfor %}
 
 The correct JSON:

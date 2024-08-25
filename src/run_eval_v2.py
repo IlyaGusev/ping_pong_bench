@@ -18,112 +18,15 @@ from dataclasses_json import DataClassJsonMixin
 from openai import OpenAI
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 
+from src.util import encode_prompt, generate, parse_output
+from src.data import Character, ChatMessages, Situation, Settings
+from src.run_judge import run_judge
 from src.provider import LLMProvider
-
-
-ChatMessage = Dict[str, Any]
-ChatMessages = List[ChatMessage]
-
-
-@dataclass
-class Character(DataClassJsonMixin):
-    char_name: str
-    system_prompt: str
-    tags: Optional[List[str]] = None
-    example_prompt: Optional[str] = None
-    initial_message: Optional[str] = None
-    summary: Optional[str] = None
-
-
-@dataclass
-class Situation(DataClassJsonMixin):
-    text: str
-    tags: Optional[List[str]] = None
-    num_turns: int = 4
-
-
-@dataclass
-class Settings(DataClassJsonMixin):
-    characters: List[Character]
-    situations: List[Situation]
-    version: int
-    interrogator_user_prompt_path: str
-    interrogator_system_prompt_path: str
-    judge_user_prompt_path: str
-    judge_system_prompt_path: str
-    character_prompt_path: str
 
 
 @dataclass
 class InterrogatorOutput(DataClassJsonMixin):
     next_utterance: str
-
-
-@dataclass
-class JudgeSinleOutput(DataClassJsonMixin):
-    is_refusal_explanation: str
-    is_refusal: bool
-    in_character_explanation: str
-    in_character_score: int
-    fluency_explanation: str
-    fluency_score: int
-    entertaining_explanation: str
-    entertaining_score: int
-
-
-@dataclass
-class JudgeOutput(DataClassJsonMixin):
-    scores: List[JudgeSinleOutput]
-
-
-def encode_prompt(template_path: str, **kwargs: Any) -> str:
-    with open(template_path, encoding="utf-8") as f:
-        template = Template(f.read())
-
-    new_kwargs = copy.deepcopy(kwargs)
-    if "messages" in kwargs:
-        messages = copy.deepcopy(kwargs["messages"])
-        mapping = {"assistant": "player"}
-        for m in messages:
-            m["role"] = mapping.get(m["role"], m["role"])
-        new_kwargs["messages"] = messages
-
-    return template.render(**new_kwargs).strip()
-
-
-def generate(messages: ChatMessages, provider: LLMProvider, **kwargs: Any) -> str:
-    params = copy.deepcopy(provider.params)
-    for k, v in kwargs.items():
-        params[k] = v
-
-    messages_copy = copy.deepcopy(messages)
-
-    # If we have additional system prompt in provider, add it to messages
-    if provider.system_prompt != "" and messages_copy[0]["role"] == "system":
-        messages_copy[0]["content"] = provider.system_prompt + "\n\n" + messages_copy[0]["content"]
-
-    if provider.merge_system and messages_copy[0]["role"] == "system":
-        system_content = messages_copy[0]["content"]
-        user_content = messages_copy[1]["content"]
-        messages_copy = messages_copy[1:]
-        messages_copy[0]["content"] = f"{system_content}\n\nUser: {user_content}"
-
-    casted_messages = [cast(ChatCompletionMessageParam, message) for message in messages_copy]
-    chat_completion = provider.api.chat.completions.create(
-        model=provider.model_name, messages=casted_messages, **params
-    )
-    return str(chat_completion.choices[0].message.content).strip()
-
-
-def parse_output(output: str) -> Dict[str, Any]:
-    start_index = output.find("{")
-    end_index = output.rfind("}")
-    text = output[start_index : end_index + 1]
-    text = text.strip()
-    record: Dict[str, Any] = json.loads(text)
-    for k in record:
-        assert isinstance(k, str)
-    return record
 
 
 def run_player(
@@ -168,7 +71,7 @@ def run_interrogator(
     user_prompt_path: str,
     character_prompt_path: str,
     provider: LLMProvider,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> InterrogatorOutput:
     char_description = encode_prompt(character_prompt_path, character=character)
     system_prompt = encode_prompt(system_prompt_path)
@@ -179,7 +82,7 @@ def run_interrogator(
         messages=messages,
     )
     prompt = [
-        {"role": "system", "content": encode_prompt(system_prompt_path)},
+        {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
     ]
     output: Optional[InterrogatorOutput] = None
@@ -200,49 +103,6 @@ def run_interrogator(
     return output
 
 
-def run_judge(
-    character: Character,
-    situation: Situation,
-    messages: ChatMessages,
-    system_prompt_path: str,
-    user_prompt_path: str,
-    character_prompt_path: str,
-    provider: LLMProvider,
-    **kwargs: Any
-) -> JudgeOutput:
-    char_description = encode_prompt(character_prompt_path, character=character)
-    system_prompt = encode_prompt(system_prompt_path)
-    user_prompt = encode_prompt(
-        user_prompt_path,
-        char_description=char_description,
-        situation=situation.text,
-        messages=messages,
-    )
-    prompt = [
-        {"role": "system", "content": encode_prompt(system_prompt_path)},
-        {"role": "user", "content": user_prompt},
-    ]
-    output: Optional[JudgeOutput] = None
-    for _ in range(3):
-        try:
-            print(prompt[0]["content"])
-            print(prompt[1]["content"])
-            result = generate(prompt, provider=provider, **kwargs)
-            print(result)
-            print()
-            print("=============")
-            print()
-            output = JudgeOutput.from_dict(parse_output(result))
-            break
-        except Exception:
-            traceback.print_exc()
-            time.sleep(10)
-            continue
-    assert output is not None
-    return output
-
-
-
 def save(
     output_path: str,
     outputs: List[Dict[str, Any]],
@@ -252,10 +112,10 @@ def save(
     version: int,
 ) -> None:
     scores: Dict[str, List[int]] = defaultdict(list)
-    refusal_count = sum([int(o["scores"]["is_refusal"]) for o in outputs])
+    refusal_count = sum([int(max(o["scores"]["is_refusal"])) for o in outputs])
     for o in outputs:
         example_scores = o["scores"]
-        is_refusal = example_scores["is_refusal"]
+        is_refusal = max(example_scores["is_refusal"])
         if not is_refusal:
             for k, v in example_scores.items():
                 if k.endswith("score"):
@@ -297,7 +157,7 @@ def process_situation(
     player_provider: LLMProvider,
     interrogator_provider: LLMProvider,
     judge_provider: LLMProvider,
-):
+) -> Dict[str, Any]:
     messages: ChatMessages = []
     scores: Dict[str, List[int]] = defaultdict(list)
     for turn in range(situation.num_turns + 1):
@@ -318,7 +178,7 @@ def process_situation(
             character_prompt_path=settings.character_prompt_path,
         )
         messages.append({"role": "assistant", "content": bot_message})
-    scores = run_judge(
+    judge_output = run_judge(
         character=character,
         situation=situation,
         messages=messages,
@@ -327,13 +187,11 @@ def process_situation(
         character_prompt_path=settings.character_prompt_path,
         provider=judge_provider,
     )
-
     final_output = {
-        **output.to_dict(),
         "messages": messages,
         "character": character.to_dict(),
         "situation": situation.to_dict(),
-        "scores": scores.to_dict(),
+        "scores": judge_output.get_aggregated()
     }
     return final_output
 
@@ -391,7 +249,7 @@ def run_eval(
                         settings=settings,
                         player_provider=player_provider,
                         interrogator_provider=interrogator_provider,
-                        judge_provider=judge_provider
+                        judge_provider=judge_provider,
                     )
                     outputs.append(final_output)
                 except Exception:

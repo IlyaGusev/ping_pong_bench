@@ -1,11 +1,86 @@
-import fire
 import json
+import traceback
 import time
+from typing import List, Any, Optional, Dict
 from statistics import mean
 from collections import defaultdict
-from scipy.stats import spearmanr  # type: ignore
+from dataclasses import dataclass
 
-from src.run_eval_v2 import run_judge, Character, Situation, Settings, LLMProvider
+import fire  # type: ignore
+from scipy.stats import spearmanr  # type: ignore
+from dataclasses_json import DataClassJsonMixin
+
+from src.data import Character, Situation, ChatMessages, Settings
+from src.util import encode_prompt, generate, parse_output
+from src.provider import LLMProvider
+
+
+@dataclass
+class JudgeSingleOutput(DataClassJsonMixin):
+    is_refusal_explanation: str
+    is_refusal: bool
+    in_character_explanation: str
+    in_character_score: int
+    fluency_explanation: str
+    fluency_score: int
+    entertaining_explanation: str
+    entertaining_score: int
+
+
+@dataclass
+class JudgeOutput(DataClassJsonMixin):
+    scores: List[JudgeSingleOutput]
+
+    def get_aggregated(self) -> Dict[str, List[int]]:
+        fixed_scores = defaultdict(list)
+        for s in self.scores:
+            fixed_scores["in_character"].append(s.in_character_score)
+            fixed_scores["entertaining"].append(s.entertaining_score)
+            fixed_scores["fluency"].append(s.fluency_score)
+            fixed_scores["is_refusal"].append(int(s.is_refusal))
+        return fixed_scores
+
+
+def run_judge(
+    character: Character,
+    situation: Situation,
+    messages: ChatMessages,
+    system_prompt_path: str,
+    user_prompt_path: str,
+    character_prompt_path: str,
+    provider: LLMProvider,
+    **kwargs: Any
+) -> JudgeOutput:
+    char_description = encode_prompt(character_prompt_path, character=character)
+    system_prompt = encode_prompt(system_prompt_path)
+    user_prompt = encode_prompt(
+        user_prompt_path,
+        char_description=char_description,
+        situation=situation.text,
+        messages=messages,
+    )
+    prompt = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+    output: Optional[JudgeOutput] = None
+    for _ in range(3):
+        try:
+            print(prompt[0]["content"])
+            print(prompt[1]["content"])
+            result = generate(prompt, provider=provider, **kwargs)
+            print(result)
+            print()
+            print("=============")
+            print()
+            output = JudgeOutput.from_dict(parse_output(result))
+            break
+        except Exception:
+            traceback.print_exc()
+            time.sleep(10)
+            continue
+    assert output is not None
+    return output
 
 
 def main(
@@ -14,8 +89,8 @@ def main(
     input_path: str,
     output_path: str,
     judge_name: str,
-    language: str = "ru"
-):
+    language: str = "ru",
+) -> None:
     with open(providers_path, encoding="utf-8") as r:
         providers = {name: LLMProvider(**provider) for name, provider in json.load(r).items()}
     with open(settings_path, encoding="utf-8") as r:
@@ -28,12 +103,12 @@ def main(
     all_prev_scores = defaultdict(list)
     all_model_scores = defaultdict(list)
     all_human_scores = defaultdict(list)
-    for i, record in enumerate(records[:100]):
+    for i, record in enumerate(records):
         character = Character.from_dict(record["character"])
         situation = Situation.from_dict(record["situation"])
         messages = record["messages"]
         try:
-            scores = run_judge(
+            output = run_judge(
                 character=character,
                 situation=situation,
                 messages=messages,
@@ -43,29 +118,23 @@ def main(
                 provider=judge_provider,
                 temperature=0.1,
                 top_p=0.95,
-                max_tokens=4096
+                max_tokens=4096,
             )
         except Exception:
             continue
-        scores = scores.to_dict()["scores"]
-        fixed_scores = defaultdict(list)
-        for s in scores:
-            for k, v in s.items():
-                if k.endswith("score"):
-                    fixed_scores[k.replace("_score", "")].append(v)
-        scores = dict()
-        for k, v in fixed_scores.items():
-            scores[k] = mean(v)
+
+        fixed_scores = output.get_aggregated()
+        scores = {k: mean(v) for k, v in fixed_scores.items() if k != "is_refusal"}
 
         human_scores = record["human_scores"]
-        prev_scores = record["scores"]
+
         mapping = {
             "entertainment": "entertaining",
             "language_fluency": "fluency",
-            "stay_in_character": "in_character"
+            "stay_in_character": "in_character",
         }
-        for k, v in mapping.items():
-            prev_scores[v] = mean(prev_scores.pop(k))
+        prev_scores = {v: mean(record["scores"].pop(k)) for k, v in mapping.items()}
+
         for key, value in scores.items():
             assert key in human_scores
             assert key in prev_scores
@@ -87,6 +156,7 @@ def main(
             print(key, spearmanr(all_model_scores[key], all_human_scores[key])[0])
         print("======")
         print()
-        time.sleep(2)
+
+
 if __name__ == "__main__":
     fire.Fire(main)

@@ -79,7 +79,7 @@ Create providers.json based on [roviders.example.json](https://github.com/IlyaGu
 Example run:
 
 ```bash
-python3 -m src.run_eval \
+python3 -m src.run_eval_v1 \
   --providers-path providers.json \
   --settings-path settings.json \
   --testee-name claude-3-haiku \
