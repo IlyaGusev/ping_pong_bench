@@ -1,3 +1,4 @@
+import shutil
 import json
 import traceback
 import time
@@ -83,6 +84,42 @@ def run_judge(
     return output
 
 
+def save(
+    output_path: str,
+    outputs: List[Dict[str, Any]],
+    judge_provider: LLMProvider,
+    version: int
+) -> None:
+    scores: Dict[str, List[int]] = defaultdict(list)
+    for o in outputs:
+        example_scores = o["new_scores"]
+        is_refusal = max(example_scores["is_refusal"])
+        if not is_refusal:
+            for k, v in example_scores.items():
+                if k.endswith("score"):
+                    scores[k].extend(v)
+
+    agg_scores = dict()
+    if scores:
+        agg_scores = {k: mean(v) for k, v in scores.items()}
+        agg_scores["final_score"] = mean(agg_scores.values())
+
+    tmp_path = output_path + "_tmp"
+    with open(tmp_path, "w", encoding="utf-8") as w:
+        json.dump(
+            {
+                "outputs": outputs,
+                "version": version,
+                "judge": judge_provider.to_dict(),
+                **agg_scores,
+            },
+            w,
+            ensure_ascii=False,
+            indent=4,
+        )
+    shutil.move(tmp_path, output_path)
+
+
 def main(
     providers_path: str,
     settings_path: str,
@@ -103,6 +140,7 @@ def main(
     all_prev_scores = defaultdict(list)
     all_model_scores = defaultdict(list)
     all_human_scores = defaultdict(list)
+    outputs = list()
     for i, record in enumerate(records):
         character = Character.from_dict(record["character"])
         situation = Situation.from_dict(record["situation"])
@@ -124,38 +162,49 @@ def main(
             continue
 
         fixed_scores = output.get_aggregated()
-        scores = {k: mean(v) for k, v in fixed_scores.items() if k != "is_refusal"}
+        record["new_scores"] = fixed_scores
+        outputs.append(record)
 
-        human_scores = record["human_scores"]
+        if "human_scores" in record:
 
-        mapping = {
-            "entertainment": "entertaining",
-            "language_fluency": "fluency",
-            "stay_in_character": "in_character",
-        }
-        prev_scores = {v: mean(record["scores"].pop(k)) for k, v in mapping.items()}
+            scores = {k: mean(v) for k, v in fixed_scores.items() if k != "is_refusal"}
+            human_scores = record["human_scores"]
 
-        for key, value in scores.items():
-            assert key in human_scores
-            assert key in prev_scores
-            all_model_scores[key].append(value)
-            all_prev_scores[key].append(prev_scores[key])
-            all_human_scores[key].append(human_scores[key])
-        all_model_scores["total"].append(mean(scores.values()))
-        all_prev_scores["total"].append(mean(prev_scores.values()))
-        all_human_scores["total"].append(mean(human_scores.values()))
-        print()
-        print("======")
-        print(len(all_model_scores["total"]))
-        print("PREV")
-        for key in all_prev_scores:
-            print(key, spearmanr(all_prev_scores[key], all_human_scores[key])[0])
+            mapping = {
+                "entertainment": "entertaining",
+                "language_fluency": "fluency",
+                "stay_in_character": "in_character",
+            }
+            prev_scores = {v: mean(record["scores"].pop(k)) for k, v in mapping.items()}
 
-        print("NEW")
-        for key in all_model_scores:
-            print(key, spearmanr(all_model_scores[key], all_human_scores[key])[0])
-        print("======")
-        print()
+            for key, value in scores.items():
+                assert key in human_scores
+                assert key in prev_scores
+                all_model_scores[key].append(value)
+                all_prev_scores[key].append(prev_scores[key])
+                all_human_scores[key].append(human_scores[key])
+            all_model_scores["total"].append(mean(scores.values()))
+            all_prev_scores["total"].append(mean(prev_scores.values()))
+            all_human_scores["total"].append(mean(human_scores.values()))
+            print()
+            print("======")
+            print(len(all_model_scores["total"]))
+            print("PREV")
+            for key in all_prev_scores:
+                print(key, spearmanr(all_prev_scores[key], all_human_scores[key])[0])
+
+            print("NEW")
+            for key in all_model_scores:
+                print(key, spearmanr(all_model_scores[key], all_human_scores[key])[0])
+            print("======")
+            print()
+
+        save(
+            output_path=output_path,
+            outputs=outputs,
+            judge_provider=judge_provider,
+            version=settings.version
+        )
 
 
 if __name__ == "__main__":
