@@ -156,10 +156,10 @@
             }
         ],
         "version": 2,
-        "interrogator_system_prompt_path": "templates/interrogator_system.jinja",
-        "interrogator_user_prompt_path": "templates/interrogator_user.jinja",
-        "judge_system_prompt_path": "templates/judge_system.jinja",
-        "judge_user_prompt_path": "templates/judge_user.jinja",
+        "interrogator_system_prompt_path": "templates/v2/interrogator_system.jinja",
+        "interrogator_user_prompt_path": "templates/v2/interrogator_user.jinja",
+        "judge_system_prompt_path": "templates/v2/judge_system.jinja",
+        "judge_user_prompt_path": "templates/v2/judge_user.jinja",
         "character_prompt_path": "templates/ru_character.jinja"
     },
     "en": {
@@ -280,10 +280,10 @@
             }
         ],
         "version": 3,
-        "interrogator_system_prompt_path": "templates/interrogator_system.jinja",
-        "interrogator_user_prompt_path": "templates/interrogator_user.jinja",
-        "judge_system_prompt_path": "templates/judge_system.jinja",
-        "judge_user_prompt_path": "templates/judge_user.jinja",
+        "interrogator_system_prompt_path": "templates/v2/interrogator_system.jinja",
+        "interrogator_user_prompt_path": "templates/v2/interrogator_user.jinja",
+        "judge_system_prompt_path": "templates/v2/judge_system.jinja",
+        "judge_user_prompt_path": "templates/v2/judge_user.jinja",
         "character_prompt_path": "templates/en_character.jinja"
     }
 }

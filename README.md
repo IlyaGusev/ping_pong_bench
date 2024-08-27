@@ -81,16 +81,16 @@ Example run:
 ```bash
 python3 -m src.run_eval_v1 \
   --providers-path providers.json \
-  --settings-path settings.json \
+  --settings-path settings_v1.json \
   --testee-name claude-3-haiku \
   --tester-name claude-3-5-sonnet \
-  --output-path results/en/claude_3_haiku.json \
+  --output-path results/v1/en/claude_3_haiku.json \
   --language en
 ```
 
 Compose a report:
 ```bash
-python3 -m src.build_table results/en pages/en.md pages/results/en
+python3 -m src.build_table results/v1/en pages/en.md pages/results/en
 ```
 
 Run Jekyll pages locally:

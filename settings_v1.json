@@ -149,8 +149,8 @@
             }
         ],
         "version": 2,
-        "system_prompt_path": "templates/system.jinja",
-        "user_prompt_path": "templates/user.jinja",
+        "system_prompt_path": "templates/v1/system.jinja",
+        "user_prompt_path": "templates/v1/user.jinja",
         "character_prompt_path": "templates/ru_character.jinja"
     },
     "en": {
@@ -271,8 +271,8 @@
             }
         ],
         "version": 1,
-        "system_prompt_path": "templates/system.jinja",
-        "user_prompt_path": "templates/user.jinja",
+        "system_prompt_path": "templates/v1/system.jinja",
+        "user_prompt_path": "templates/v1/user.jinja",
         "character_prompt_path": "templates/en_character.jinja"
     }
 }
