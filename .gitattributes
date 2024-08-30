@@ -1,5 +1,7 @@
 results/*.json filter=lfs diff=lfs merge=lfs -text
 results/*.jsonl filter=lfs diff=lfs merge=lfs -text
+results/**/*.jsonl filter=lfs diff=lfs merge=lfs -text
+results/**/*.json filter=lfs diff=lfs merge=lfs -text
 results/ru/*.json filter=lfs diff=lfs merge=lfs -text
 results/en/*.json filter=lfs diff=lfs merge=lfs -text
 results/v1/ru/*.json filter=lfs diff=lfs merge=lfs -text
@@ -7,3 +9,11 @@ results/v1/en/*.json filter=lfs diff=lfs merge=lfs -text
 results/v2/ru/*.json filter=lfs diff=lfs merge=lfs -text
 results/v2/en/*.json filter=lfs diff=lfs merge=lfs -text
 pages/favicon.png filter=lfs diff=lfs merge=lfs -text
+results/ru_v2_cross_model/claude_3_5_sonnet.json filter=lfs diff=lfs merge=lfs -text
+results/ru_v2_cross_model/claude_3_haiku.json filter=lfs diff=lfs merge=lfs -text
+results/ru_v2_cross_model/gpt_4o.json filter=lfs diff=lfs merge=lfs -text
+results/ru_v2_cross_model/gpt_4o_mini.json filter=lfs diff=lfs merge=lfs -text
+results/ru_v2_cross_model/llama_31_70b.json filter=lfs diff=lfs merge=lfs -text
+results/ru_v2_cross_model/wizardlm_2_8x22b.json filter=lfs diff=lfs merge=lfs -text
+results/en_v2_cross_model/claude_3_5_sonnet.json filter=lfs diff=lfs merge=lfs -text
+results/en_v2_cross_model/gpt_4o.json filter=lfs diff=lfs merge=lfs -text
