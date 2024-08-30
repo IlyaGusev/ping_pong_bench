@@ -159,7 +159,6 @@ def process_situation(
     judge_provider: LLMProvider,
 ) -> Dict[str, Any]:
     messages: ChatMessages = []
-    scores: Dict[str, List[int]] = defaultdict(list)
     for turn in range(situation.num_turns + 1):
         output = run_interrogator(
             character=character,
@@ -191,7 +190,7 @@ def process_situation(
         "messages": messages,
         "character": character.to_dict(),
         "situation": situation.to_dict(),
-        "scores": judge_output.get_aggregated()
+        "scores": judge_output.get_aggregated(),
     }
     return final_output
 

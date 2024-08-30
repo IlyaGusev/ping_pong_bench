@@ -85,10 +85,7 @@ def run_judge(
 
 
 def save(
-    output_path: str,
-    outputs: List[Dict[str, Any]],
-    judge_provider: LLMProvider,
-    version: int
+    output_path: str, outputs: List[Dict[str, Any]], judge_provider: LLMProvider, version: int
 ) -> None:
     scores: Dict[str, List[int]] = defaultdict(list)
     for o in outputs:
@@ -203,7 +200,7 @@ def main(
             output_path=output_path,
             outputs=outputs,
             judge_provider=judge_provider,
-            version=settings.version
+            version=settings.version,
         )
 
 
