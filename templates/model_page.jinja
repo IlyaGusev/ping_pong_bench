@@ -1,5 +1,6 @@
 <style>
     h3 { margin: 10px 0px 10px; }
+    hr { margin-top: 10px; margin-bottom: 10px;}
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid black; padding: 8px; text-align: left; }
     .average { font-weight: bold; }
@@ -21,7 +22,7 @@
         <tr>
         <td>{{situation | truncate(50)}}</td>
         {% for char in characters %}
-        <td>{% if not scores[situation][char] %}REF{% else %}<a href="#" onclick="showDialog{{judge["model_name"]}}(event, '{{keys[situation][char]}}')">{{scores[situation][char] | round(2, 'floor')}}</a>{% endif %}</td>
+        <td>{% if not scores[situation][char] %}REF{% else %}<a href="#" onclick="showDialog{{judge["model_name"] | replace("-", "_")}}(event, '{{keys[situation][char]}}')">{{scores[situation][char] | round(2, 'floor')}}</a>{% endif %}</td>
         {% endfor %}
         <td class='average'>{% if not situation_averages[situation] %}REF{% else %}{{situation_averages[situation] | round(2, 'floor')}}{% endif %}</td>
         </tr>
