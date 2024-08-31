@@ -87,7 +87,7 @@ def build_table(
         "in_character",
         "fluency",
         "entertaining",
-        "num_situatins"
+        "num_situations"
     ]
     pd.set_option("display.precision", 2)
 
