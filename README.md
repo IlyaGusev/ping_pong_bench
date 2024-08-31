@@ -90,7 +90,7 @@ python3 -m src.run_eval_v1 \
 
 Compose a report:
 ```bash
-python3 -m src.build_table results/v1/en pages/en.md pages/results/en
+python3 -m src.build_table_v1 results/v1/en pages/en.md pages/results/en
 ```
 
 Run Jekyll pages locally:

@@ -76,10 +76,14 @@ def generate_html(data: Dict[str, Any]) -> str:
     """
 
     html_content += (
-        "<h3>Judge</h3><code>" + json.dumps(data.get("tester", data.get("judge")), ensure_ascii=False) + "</code>"
+        "<h3>Judge</h3><code>"
+        + json.dumps(data.get("tester", data.get("judge")), ensure_ascii=False)
+        + "</code>"
     )
     html_content += (
-        "<h3>Player</h3><code>" + json.dumps(data.get("testee", data.get("player")), ensure_ascii=False) + "</code>"
+        "<h3>Player</h3><code>"
+        + json.dumps(data.get("testee", data.get("player")), ensure_ascii=False)
+        + "</code>"
     )
 
     html_content += """

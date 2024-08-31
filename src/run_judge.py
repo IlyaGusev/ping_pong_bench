@@ -52,7 +52,7 @@ def run_judge(
     user_prompt_path: str,
     character_prompt_path: str,
     provider: LLMProvider,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> JudgeOutput:
     char_description = encode_prompt(character_prompt_path, character=character)
     system_prompt = encode_prompt(system_prompt_path)
@@ -93,7 +93,7 @@ def main(
     output_path: str,
     judge_name: str,
     language: str = "ru",
-    output_key: str = "scores"
+    output_key: str = "scores",
 ) -> None:
     with open(providers_path, encoding="utf-8") as r:
         providers = {name: LLMProvider(**provider) for name, provider in json.load(r).items()}
@@ -101,11 +101,7 @@ def main(
         settings = Settings.from_dict(json.load(r)[language])
 
     judge_provider = copy.copy(providers[judge_name])
-    judge_provider.params = {
-        "temperature": 0.1,
-        "top_p": 0.95,
-        "max_tokens": 4096
-    }
+    judge_provider.params = {"temperature": 0.1, "top_p": 0.95, "max_tokens": 4096}
 
     global_params = dict()
     with open(input_path) as r:

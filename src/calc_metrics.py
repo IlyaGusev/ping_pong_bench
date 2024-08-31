@@ -51,13 +51,8 @@ def main(input_dir: str) -> None:
         final_human_score = mean(example_human_scores.values())
         human_scores.append(final_human_score)
 
-        weights = {
-            "claude-3-5-sonnet-20240620": 0.5,
-            "gpt-4o": 0.5
-        }
-        top_2_score = sum(
-            [v * weights.get(k, 0.0) for k, v in example_judge_scores.items()]
-        )
+        weights = {"claude-3-5-sonnet-20240620": 0.5, "gpt-4o": 0.5}
+        top_2_score = sum([v * weights.get(k, 0.0) for k, v in example_judge_scores.items()])
         top_2_scores.append(top_2_score)
         sonnet_scores.append(example_judge_scores["claude-3-5-sonnet-20240620"])
 

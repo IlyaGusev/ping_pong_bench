@@ -47,10 +47,7 @@ def build_table(
             all_scores[key][judge_name] = output
             player_scores[player_name].append(output)
 
-    weights = {
-        "claude-3-5-sonnet-20240620": 0.5,
-        "gpt-4o": 0.5
-    }
+    weights = {"claude-3-5-sonnet-20240620": 0.5, "gpt-4o": 0.5}
     final_scores: Dict[str, Dict[str, List[float]]] = defaultdict(lambda: defaultdict(list))
     for _, example_scores in all_scores.items():
         example_judge_scores: Dict[str, Dict[str, Any]] = defaultdict(dict)
@@ -73,11 +70,17 @@ def build_table(
     for player_name, key_scores in final_scores.items():
         record: Dict[str, Any] = {}
         model_name = player2name[player_name]
-        record["model_name"] = f"[{model_name}]({{{{ '/{results_dir}/{model_name}' | relative_url}}}})"
+        record["model_name"] = (
+            f"[{model_name}]({{{{ '/{results_dir}/{model_name}' | relative_url}}}})"
+        )
         record["num_situations"] = len(player_dialogs[player_name])
         outputs = list(player_dialogs[player_name].values())
-        record["avg_length"] = int(mean([len(m["content"]) for o in outputs for m in o if m["role"] == "assistant"]))
-        record["refusal_ratio"] = len(player_refusals[player_name]) / len(player_dialogs[player_name])
+        record["avg_length"] = int(
+            mean([len(m["content"]) for o in outputs for m in o if m["role"] == "assistant"])
+        )
+        record["refusal_ratio"] = len(player_refusals[player_name]) / len(
+            player_dialogs[player_name]
+        )
         scores = {k: mean(s) for k, s in key_scores.items()}
         record.update(scores)
         records.append(record)
@@ -120,11 +123,22 @@ def build_table(
         with open(output_path, "w") as w:
             w.write(table)
     if dialogues_path:
+        os.makedirs(dialogues_path, exist_ok=True)
         for player, scores in player_scores.items():
             name = player2name[player]
+            judge2records = defaultdict(list)
+            for record in scores:
+                judge2records[record["judge"]["model_name"]].append(record)
             output_path = os.path.join(dialogues_path, f"{name}.html")
-            html = generate_html(scores)
-            html = "---\nlayout: default\n---" + html
+            html = "---\nlayout: default\n---"
+            for judge, records in judge2records.items():
+                html += generate_html(
+                    {
+                        "outputs": records,
+                        "player": records[0]["player"],
+                        "judge": records[0]["judge"],
+                    }
+                )
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(html)
 

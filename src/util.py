@@ -60,7 +60,7 @@ def save(
     judge_provider: Dict[str, Any],
     player_provider: Dict[str, Any],
     version: int,
-    score_key: str = "scores"
+    score_key: str = "scores",
 ) -> None:
     scores: Dict[str, List[int]] = defaultdict(list)
     refusal_count = sum([int(max(o[score_key]["is_refusal"])) for o in outputs])

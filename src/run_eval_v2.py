@@ -187,18 +187,10 @@ def run_eval(
                 existing_keys.add(record_key)
 
     interrogator_provider = copy.copy(providers[interrogator_name])
-    interrogator_provider.params = {
-        "temperature": 0.8,
-        "top_p": 0.95,
-        "max_tokens": 1024
-    }
+    interrogator_provider.params = {"temperature": 0.8, "top_p": 0.95, "max_tokens": 1024}
     player_provider = copy.copy(providers[player_name])
     judge_provider = copy.copy(providers[judge_name])
-    judge_provider.params = {
-        "temperature": 0.1,
-        "top_p": 0.95,
-        "max_tokens": 4096
-    }
+    judge_provider.params = {"temperature": 0.1, "top_p": 0.95, "max_tokens": 4096}
 
     total_iterations = len(settings.characters) * len(settings.situations)
     with tqdm(total=total_iterations, desc="Processing pairs") as pbar:
