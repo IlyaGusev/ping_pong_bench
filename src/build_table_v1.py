@@ -85,6 +85,7 @@ def build_table(
         with open(output_path, "w") as w:
             w.write(table)
     if dialogues_path:
+        os.makedirs(dialogues_path, exist_ok=True)
         for file_name in os.listdir(results_dir):
             if not file_name.endswith(".json"):
                 continue
