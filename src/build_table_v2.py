@@ -75,20 +75,28 @@ def build_table(
         model_name = player2name[player_name]
         record["model_name"] = f"[{model_name}]({{{{ '/{results_dir}/{model_name}' | relative_url}}}})"
         record["num_situations"] = len(player_dialogs[player_name])
+        outputs = list(player_dialogs[player_name].values())
+        record["avg_length"] = int(mean([len(m["content"]) for o in outputs for m in o if m["role"] == "assistant"]))
         record["refusal_ratio"] = len(player_refusals[player_name]) / len(player_dialogs[player_name])
         scores = {k: mean(s) for k, s in key_scores.items()}
         record.update(scores)
         records.append(record)
 
-    columns = [
-        "model_name",
-        "final",
-        "refusal_ratio",
-        "in_character",
-        "fluency",
-        "entertaining",
-        "num_situations"
-    ]
+    mapping = (
+        ("model_name", "model_name"),
+        ("final", "final_score"),
+        ("refusal_ratio", "refusal_ratio"),
+        ("in_character", "stay_in_character_score"),
+        ("fluency", "language_fluency_score"),
+        ("entertaining", "entertainment_score"),
+        ("num_situations", "num_situations"),
+        ("avg_length", "avg_length"),
+    )
+    for record in records:
+        for key, value in mapping:
+            record[value] = record.pop(key)
+
+    columns = [m[1] for m in mapping]
     pd.set_option("display.precision", 2)
 
     # Set display options to show all columns
@@ -96,7 +104,7 @@ def build_table(
     pd.set_option("display.width", None)
     pd.set_option("display.max_colwidth", None)
 
-    df = pd.DataFrame(records).sort_values(by="final", ascending=False)[columns]
+    df = pd.DataFrame(records).sort_values(by="final_score", ascending=False)[columns]
     print(df)
 
     # Convert DataFrame to list of lists for tabulate
