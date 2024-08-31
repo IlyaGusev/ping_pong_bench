@@ -10,7 +10,7 @@ import pandas as pd  # type: ignore
 from tabulate import tabulate
 import numpy as np
 
-from src.build_html_testee import generate_html
+from src.build_html_testee_v2 import generate_html
 
 
 def build_table(
@@ -39,7 +39,7 @@ def build_table(
             scores = output["scores"]
             output["player"] = player
             output["judge"] = judge
-            is_refusal = scores.pop("is_refusal")
+            is_refusal = scores["is_refusal"]
             if max(is_refusal) == 1:
                 player_refusals[player_name].add(str(output["messages"]))
                 continue
@@ -47,7 +47,7 @@ def build_table(
             all_scores[key][judge_name] = output
             player_scores[player_name].append(output)
 
-    weights = {"claude-3-5-sonnet-20240620": 0.5, "gpt-4o": 0.5}
+    weights = {"claude-3-5-sonnet-20240620": 1.0, "gpt-4o": 1.0}
     final_scores: Dict[str, Dict[str, List[float]]] = defaultdict(lambda: defaultdict(list))
     for _, example_scores in all_scores.items():
         example_judge_scores: Dict[str, Dict[str, Any]] = defaultdict(dict)
@@ -57,13 +57,15 @@ def build_table(
             judge_scores = output["scores"]
             output_scores = []
             for key, value in judge_scores.items():
+                if "refusal" in key:
+                    continue
                 score = mean(value)
                 example_judge_scores[key][judge_model] = score
                 output_scores.append(score)
             final_score = mean(output_scores)
             example_judge_scores["final"][judge_model] = final_score
         for key, scores in example_judge_scores.items():
-            final_score = sum([weights[k] * v for k, v in scores.items()])
+            final_score = mean([weights[k] * v for k, v in scores.items()])
             final_scores[player_name][key].append(final_score)
 
     records = list()

@@ -1,0 +1,66 @@
+<style>
+    h3 { margin: 10px 0px 10px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid black; padding: 8px; text-align: left; }
+    .average { font-weight: bold; }
+    .dialog { margin-top: 20px; border: 1px solid #ddd; padding: 10px; }
+    .user { color: #6a9fb5; }
+    .assistant { color: #90a959; }
+</style>
+<h3>Scores</h3>
+<table id="scoreTable">
+    <tr>
+        <th>Situation</th>
+        {% for char in characters %}
+        <th>{{char}}</th>
+        {% endfor %}
+        <th>Average by situation</th>
+    </tr>
+
+    {% for situation in situations %}
+        <tr>
+        <td>{{situation | truncate(50)}}</td>
+        {% for char in characters %}
+        <td>{% if not scores[situation][char] %}REF{% else %}<a href="#" onclick="showDialog(event, '{{keys[situation][char]}}')">{{scores[situation][char] | round(2, 'floor')}}</a>{% endif %}</td>
+        {% endfor %}
+        <td class='average'>{% if not situation_averages[situation] %}REF{% else %}{{situation_averages[situation] | round(2, 'floor')}}{% endif %}</td>
+        </tr>
+    {% endfor %}
+
+    <tr>
+    <td class='average'>Average by character</td>
+    {% for char in characters %}
+       <td class='average'>{% if not character_averages[char] %}REF{% else %}{{character_averages[char] | round(2, 'floor')}}{% endif %}</td>
+    {% endfor %}
+    <td class='average'>{{overall_average | round(2, 'floor')}}</td>
+    </tr>
+</table>
+<h3>Judge</h3><code>{{judge}}</code>"
+<h3>Player</h3><code>{{player}}</code>
+</hr>
+
+<div id="dialogContainer" class="dialog" hidden></div>
+<script>
+    const dialogs = {{dialogs}}
+
+        function showDialog(e, key) {
+            e = e || window.event;
+            e.preventDefault();
+            const dialog = dialogs[key]["messages"];
+            if (!dialog) {
+                document.getElementById('dialogContainer').innerHTML = 'Dialog not found';
+                return;
+            }
+            let dialogHtml = '';
+            dialogHtml += '<p>Character: ' + dialogs[key]["character"] + '</p>';
+            dialogHtml += '<p>Situation: ' + dialogs[key]["situation"] + '</p>';
+            dialogHtml += '<h3>Dialog</h3>';
+            for (const message of dialog) {
+                dialogHtml += '<p class="' + message.role + '"><strong>' + message.role + ':</strong> ' + message.content + '</p>';
+            }
+            document.getElementById('dialogContainer').innerHTML = dialogHtml;
+            document.getElementById('dialogContainer').removeAttribute("hidden");
+            document.getElementById('dialogContainer').scrollIntoView();
+        }
+</script>
+

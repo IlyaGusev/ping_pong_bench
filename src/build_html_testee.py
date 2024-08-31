@@ -76,12 +76,6 @@ def generate_html(data: Dict[str, Any]) -> str:
     </style>
     """
 
-    html_content += (
-        "<h3>Player</h3><code>"
-        + json.dumps(data.get("testee", data.get("player")), ensure_ascii=False)
-        + "</code>"
-    )
-
     html_content += """
     <h3>Scores</h3>
     <table id="scoreTable">
@@ -129,10 +123,19 @@ def generate_html(data: Dict[str, Any]) -> str:
 
     overall_average = safe_mean(overall_averages) if overall_averages else None
     html_content += f"<td class='average'>{format_score_safe(overall_average)}</td></tr></table>"
+
+    html_content += (
+        "<h3>Player</h3><code>"
+        + json.dumps(data.get("testee", data.get("player")), ensure_ascii=False)
+        + "</code>"
+    )
+
     html_content += (
         "<h3>Judge</h3><code>"
         + json.dumps(data.get("tester", data.get("judge")), ensure_ascii=False)
         + "</code>"
+        + "</hr>"
+        + "</hr>"
     )
 
     html_content += """
