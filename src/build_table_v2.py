@@ -132,7 +132,7 @@ def build_table(
             for record in scores:
                 judge2records[record["judge"]["model_name"]].append(record)
             output_path = os.path.join(dialogues_path, f"{name}.html")
-            html = "---\nlayout: default\n---"
+            html = "---\nlayout: default\n---\n"
             for judge, records in judge2records.items():
                 html += generate_html(
                     {
