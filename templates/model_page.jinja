@@ -1,6 +1,5 @@
 <style>
     h3 { margin: 10px 0px 10px; }
-    hr.rounded { border-top: 8px solid #bbb; border-radius: 5px; }
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid black; padding: 8px; text-align: left; }
     .average { font-weight: bold; }
@@ -39,22 +38,24 @@
 <h3>Judge</h3><code>{{judge|tojson}}</code>"
 <h3>Player</h3><code>{{player|tojson}}</code>
 <div id="dialogContainer_{{judge["model_name"] | replace("-", "_") }}" class="dialog" hidden></div>
-<hr class="rounded">
+<hr>
+<hr>
 <script>
-    const dialogs = {{dialogs}}
+    const dialogs_{{judge["model_name"] | replace("-", "_") }} = {{dialogs}}
 
         function showDialog{{judge["model_name"] | replace("-", "_") }}(e, key) {
             e = e || window.event;
             e.preventDefault();
-            const dialog = dialogs[key]["messages"];
+            const dialog = dialogs_{{judge["model_name"] | replace("-", "_") }}[key];
+            const messages = dialog["messages"];
             var container = document.getElementById('dialogContainer_{{judge["model_name"] | replace("-", "_") }}');
             if (!dialog) {
                 container.innerHTML = 'Dialog not found';
                 return;
             }
             let dialogHtml = '';
-            dialogHtml += '<p>Character: ' + dialogs[key]["character"] + '</p>';
-            dialogHtml += '<p>Situation: ' + dialogs[key]["situation"] + '</p>';
+            dialogHtml += '<p>Character: ' + dialog["character"] + '</p>';
+            dialogHtml += '<p>Situation: ' + dialog["situation"] + '</p>';
             dialogHtml += '<h3>Dialog</h3>';
             for (const message of dialog) {
                 dialogHtml += '<p class="' + message.role + '"><strong>' + message.role + ':</strong> ' + message.content + '</p>';
