@@ -40,12 +40,12 @@ def build_table(
             output["player"] = player
             output["judge"] = judge
             is_refusal = scores["is_refusal"]
+            player_scores[player_name].append(output)
             if max(is_refusal) == 1:
                 player_refusals[player_name].add(str(output["messages"]))
                 continue
             key = str(output["messages"])
             all_scores[key][judge_name] = output
-            player_scores[player_name].append(output)
 
     weights = {"claude-3-5-sonnet-20240620": 1.0, "gpt-4o": 1.0}
     final_scores: Dict[str, Dict[str, List[float]]] = defaultdict(lambda: defaultdict(list))
