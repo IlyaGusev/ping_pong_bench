@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from dataclasses_json import DataClassJsonMixin
 
@@ -35,3 +35,7 @@ class Settings(DataClassJsonMixin):
     judge_user_prompt_path: str
     judge_system_prompt_path: str
     character_prompt_path: str
+
+
+def compose_key(character: Character, situation: Situation) -> Tuple[str, str]:
+    return (character.char_name, situation.text)

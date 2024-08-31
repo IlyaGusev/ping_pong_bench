@@ -1,19 +1,23 @@
 You are speaking with the following player: "{{char_summary}}"
+You are not this character!
 
-Imagine that you are an internet user and generate the next user utterance in the conversation with this player.
+Imagine you are an internet user and generate the next user utterance in the conversation with this player.
+You can use actions inside asterisks when appropriate.
 
-Follow this situation: "{{situation}}".
+Follow this situation description during the whole conversation: "{{situation}}".
+
+Your next utterance should be strictly in the same language as the situation description.
 
 Return the result in JSON with the following format:
 {
     "next_utterance": "...",
 }
 
-Always return a correct JSON!
+Always return a correct JSON! Always scape double quotes in strings.
 
 Conversation:
 {% for message in messages %}
-{{message.role}}: {{message.content}}
+{% if message.role in ("assistant",) %}player{% else %}{{message.role}}{% endif %}: {{message.content}}
 {% endfor %}
 
 The correct JSON:

@@ -1,5 +1,8 @@
 import copy
 import json
+import shutil
+from collections import defaultdict
+from statistics import mean
 from typing import Any, Dict, List, Optional, cast
 
 from jinja2 import Template
@@ -48,3 +51,47 @@ def generate(messages: ChatMessages, provider: LLMProvider, **kwargs: Any) -> st
         model=provider.model_name, messages=casted_messages, **params
     )
     return str(chat_completion.choices[0].message.content).strip()
+
+
+def save(
+    output_path: str,
+    outputs: List[Dict[str, Any]],
+    interrogator_provider: Dict[str, Any],
+    judge_provider: Dict[str, Any],
+    player_provider: Dict[str, Any],
+    version: int,
+    score_key: str = "scores"
+) -> None:
+    scores: Dict[str, List[int]] = defaultdict(list)
+    refusal_count = sum([int(max(o[score_key]["is_refusal"])) for o in outputs])
+    for o in outputs:
+        example_scores = o[score_key]
+        is_refusal = max(example_scores["is_refusal"])
+        if not is_refusal:
+            for k, v in example_scores.items():
+                if "refusal" not in k and "explanation" not in k:
+                    scores[k].extend(v)
+
+    agg_scores = dict()
+    if scores:
+        agg_scores = {k: mean(v) for k, v in scores.items()}
+        agg_scores["final_score"] = mean(agg_scores.values())
+    refusal_ratio = refusal_count / len(outputs)
+
+    tmp_path = output_path + "_tmp"
+    with open(tmp_path, "w", encoding="utf-8") as w:
+        json.dump(
+            {
+                "outputs": outputs,
+                "version": version,
+                "refusal_ratio": refusal_ratio,
+                "judge": judge_provider,
+                "interrogator": interrogator_provider,
+                "player": player_provider,
+                **agg_scores,
+            },
+            w,
+            ensure_ascii=False,
+            indent=4,
+        )
+    shutil.move(tmp_path, output_path)

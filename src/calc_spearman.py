@@ -15,7 +15,10 @@ def main(
     ref_key: str = "human_scores",
 ) -> None:
     with open(pred_path) as r:
-        predictions = json.load(r)["outputs"]
+        if pred_path.endswith(".json"):
+            predictions = json.load(r)["outputs"]
+        else:
+            predictions = [json.loads(line) for line in r]
     with open(ref_path) as r:
         ref_list = [json.loads(line) for line in r]
         references = {str(rec["messages"]): rec for rec in ref_list}
@@ -29,7 +32,10 @@ def main(
     }
     model_names = list()
     for prediction in predictions:
-        reference = references[str(prediction["messages"])]
+        key = str(prediction["messages"])
+        if key not in references:
+            continue
+        reference = references[key]
         for key, score in reference[ref_key].items():
             human_scores[key].append(score)
         for key, score in prediction[scores_key].items():

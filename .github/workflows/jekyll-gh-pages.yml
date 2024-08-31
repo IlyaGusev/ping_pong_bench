@@ -39,9 +39,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Build RU report
-        run: python3 -m src.build_table results/v1/ru pages/ru.md pages/results/ru
+        run: python3 -m src.build_table_v1 results/v1/ru pages/ru.md pages/results/ru
       - name: Build EN report
-        run: python3 -m src.build_table results/v1/en pages/en.md pages/results/en
+        run: python3 -m src.build_table_v1 results/v1/en pages/en.md pages/results/en
+      - name: Build v2 RU report
+        run: python3 -m src.build_table_v2 results/v2/ru pages/ru_v2.md
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll

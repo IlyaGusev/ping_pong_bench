@@ -1,4 +1,6 @@
+import os
 import shutil
+import copy
 import json
 import traceback
 import time
@@ -11,8 +13,8 @@ import fire  # type: ignore
 from scipy.stats import spearmanr  # type: ignore
 from dataclasses_json import DataClassJsonMixin
 
-from src.data import Character, Situation, ChatMessages, Settings
-from src.util import encode_prompt, generate, parse_output
+from src.data import Character, Situation, ChatMessages, Settings, compose_key
+from src.util import encode_prompt, generate, parse_output, save
 from src.provider import LLMProvider
 
 
@@ -84,39 +86,6 @@ def run_judge(
     return output
 
 
-def save(
-    output_path: str, outputs: List[Dict[str, Any]], judge_provider: LLMProvider, version: int
-) -> None:
-    scores: Dict[str, List[int]] = defaultdict(list)
-    for o in outputs:
-        example_scores = o["new_scores"]
-        is_refusal = max(example_scores["is_refusal"])
-        if not is_refusal:
-            for k, v in example_scores.items():
-                if k.endswith("score"):
-                    scores[k].extend(v)
-
-    agg_scores = dict()
-    if scores:
-        agg_scores = {k: mean(v) for k, v in scores.items()}
-        agg_scores["final_score"] = mean(agg_scores.values())
-
-    tmp_path = output_path + "_tmp"
-    with open(tmp_path, "w", encoding="utf-8") as w:
-        json.dump(
-            {
-                "outputs": outputs,
-                "version": version,
-                "judge": judge_provider.to_dict(),
-                **agg_scores,
-            },
-            w,
-            ensure_ascii=False,
-            indent=4,
-        )
-    shutil.move(tmp_path, output_path)
-
-
 def main(
     providers_path: str,
     settings_path: str,
@@ -124,24 +93,49 @@ def main(
     output_path: str,
     judge_name: str,
     language: str = "ru",
+    output_key: str = "scores"
 ) -> None:
     with open(providers_path, encoding="utf-8") as r:
         providers = {name: LLMProvider(**provider) for name, provider in json.load(r).items()}
     with open(settings_path, encoding="utf-8") as r:
         settings = Settings.from_dict(json.load(r)[language])
 
-    judge_provider = providers[judge_name]
-    with open(input_path) as r:
-        records = [json.loads(line) for line in r]
+    judge_provider = copy.copy(providers[judge_name])
+    judge_provider.params = {
+        "temperature": 0.1,
+        "top_p": 0.95,
+        "max_tokens": 4096
+    }
 
-    all_prev_scores = defaultdict(list)
-    all_model_scores = defaultdict(list)
-    all_human_scores = defaultdict(list)
-    outputs = list()
+    global_params = dict()
+    with open(input_path) as r:
+        if input_path.endswith(".jsonl"):
+            records = [json.loads(line) for line in r]
+        elif input_path.endswith(".json"):
+            global_params = json.load(r)
+            records = global_params.pop("outputs")
+
+    outputs = []
+    existing_keys = set()
+    if os.path.exists(output_path):
+        with open(output_path, encoding="utf-8") as r:
+            outputs = json.load(r)["outputs"]
+            for output in outputs:
+                character = Character.from_dict(output["character"])
+                situation = Situation.from_dict(output["situation"])
+                record_key = compose_key(character=character, situation=situation)
+                existing_keys.add(record_key)
+
     for i, record in enumerate(records):
         character = Character.from_dict(record["character"])
         situation = Situation.from_dict(record["situation"])
+        record_key = compose_key(character=character, situation=situation)
+        if record_key in existing_keys:
+            print(f"Existing key: {record_key}")
+            continue
+
         messages = record["messages"]
+        record.pop("scores", None)
         try:
             output = run_judge(
                 character=character,
@@ -151,56 +145,22 @@ def main(
                 system_prompt_path=settings.judge_system_prompt_path,
                 character_prompt_path=settings.character_prompt_path,
                 provider=judge_provider,
-                temperature=0.1,
-                top_p=0.95,
-                max_tokens=4096,
             )
         except Exception:
             continue
 
         fixed_scores = output.get_aggregated()
-        record["new_scores"] = fixed_scores
+        record[output_key] = fixed_scores
         outputs.append(record)
-
-        if "human_scores" in record:
-
-            scores = {k: mean(v) for k, v in fixed_scores.items() if k != "is_refusal"}
-            human_scores = record["human_scores"]
-
-            mapping = {
-                "entertainment": "entertaining",
-                "language_fluency": "fluency",
-                "stay_in_character": "in_character",
-            }
-            prev_scores = {v: mean(record["scores"].pop(k)) for k, v in mapping.items()}
-
-            for key, value in scores.items():
-                assert key in human_scores
-                assert key in prev_scores
-                all_model_scores[key].append(value)
-                all_prev_scores[key].append(prev_scores[key])
-                all_human_scores[key].append(human_scores[key])
-            all_model_scores["total"].append(mean(scores.values()))
-            all_prev_scores["total"].append(mean(prev_scores.values()))
-            all_human_scores["total"].append(mean(human_scores.values()))
-            print()
-            print("======")
-            print(len(all_model_scores["total"]))
-            print("PREV")
-            for key in all_prev_scores:
-                print(key, spearmanr(all_prev_scores[key], all_human_scores[key])[0])
-
-            print("NEW")
-            for key in all_model_scores:
-                print(key, spearmanr(all_model_scores[key], all_human_scores[key])[0])
-            print("======")
-            print()
 
         save(
             output_path=output_path,
             outputs=outputs,
-            judge_provider=judge_provider,
-            version=settings.version,
+            judge_provider=judge_provider.to_dict(),
+            interrogator_provider=global_params["interrogator"],
+            player_provider=global_params["player"],
+            version=global_params["version"],
+            score_key=output_key,
         )
 
 
