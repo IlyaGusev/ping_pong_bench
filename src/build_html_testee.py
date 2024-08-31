@@ -45,11 +45,12 @@ def generate_html(data: Dict[str, Any]) -> str:
                 scores[situation][char_name] = float("nan")
             elif "scores" in output:
                 if output["scores"]:
+                    escores = output["scores"]
                     avg_score = safe_mean(
                         [
-                            safe_mean(output["scores"].get("stay_in_character", [])),
-                            safe_mean(output["scores"].get("language_fluency", [])),
-                            safe_mean(output["scores"].get("entertainment", [])),
+                            safe_mean(escores.get("stay_in_character", escores.get("in_character", []))),
+                            safe_mean(escores.get("language_fluency", escores.get("fluency", []))),
+                            safe_mean(escores.get("entertainment", escores.get("entertaining", []))),
                         ]
                     )
                     scores[situation][char_name] = avg_score
