@@ -1,5 +1,6 @@
 <style>
     h3 { margin: 10px 0px 10px; }
+    hr.rounded { border-top: 8px solid #bbb; border-radius: 5px; }
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid black; padding: 8px; text-align: left; }
     .average { font-weight: bold; }
@@ -7,7 +8,7 @@
     .user { color: #6a9fb5; }
     .assistant { color: #90a959; }
 </style>
-<h3>Scores</h3>
+<h3>Scores: {{judge["model_name"]}}</h3>
 <table id="scoreTable">
     <tr>
         <th>Situation</th>
@@ -21,7 +22,7 @@
         <tr>
         <td>{{situation | truncate(50)}}</td>
         {% for char in characters %}
-        <td>{% if not scores[situation][char] %}REF{% else %}<a href="#" onclick="showDialog(event, '{{keys[situation][char]}}')">{{scores[situation][char] | round(2, 'floor')}}</a>{% endif %}</td>
+        <td>{% if not scores[situation][char] %}REF{% else %}<a href="#" onclick="showDialog{{judge["model_name"]}}(event, '{{keys[situation][char]}}')">{{scores[situation][char] | round(2, 'floor')}}</a>{% endif %}</td>
         {% endfor %}
         <td class='average'>{% if not situation_averages[situation] %}REF{% else %}{{situation_averages[situation] | round(2, 'floor')}}{% endif %}</td>
         </tr>
@@ -35,20 +36,20 @@
     <td class='average'>{{overall_average | round(2, 'floor')}}</td>
     </tr>
 </table>
-<h3>Judge</h3><code>{{judge}}</code>"
-<h3>Player</h3><code>{{player}}</code>
-</hr>
-
-<div id="dialogContainer" class="dialog" hidden></div>
+<h3>Judge</h3><code>{{judge|tojson}}</code>"
+<h3>Player</h3><code>{{player|tojson}}</code>
+<div id="dialogContainer_{{judge["model_name"] | replace("-", "_") }}" class="dialog" hidden></div>
+<hr class="rounded">
 <script>
     const dialogs = {{dialogs}}
 
-        function showDialog(e, key) {
+        function showDialog{{judge["model_name"] | replace("-", "_") }}(e, key) {
             e = e || window.event;
             e.preventDefault();
             const dialog = dialogs[key]["messages"];
+            var container = document.getElementById('dialogContainer_{{judge["model_name"] | replace("-", "_") }}');
             if (!dialog) {
-                document.getElementById('dialogContainer').innerHTML = 'Dialog not found';
+                container.innerHTML = 'Dialog not found';
                 return;
             }
             let dialogHtml = '';
@@ -58,9 +59,9 @@
             for (const message of dialog) {
                 dialogHtml += '<p class="' + message.role + '"><strong>' + message.role + ':</strong> ' + message.content + '</p>';
             }
-            document.getElementById('dialogContainer').innerHTML = dialogHtml;
-            document.getElementById('dialogContainer').removeAttribute("hidden");
-            document.getElementById('dialogContainer').scrollIntoView();
+            container.innerHTML = dialogHtml;
+            container.removeAttribute("hidden");
+            container.scrollIntoView();
         }
 </script>
 
