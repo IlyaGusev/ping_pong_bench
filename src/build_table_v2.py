@@ -88,9 +88,21 @@ def build_table(
         record.update(scores)
         records.append(record)
 
+    median_length = median([r["avg_length"] for r in records])
+    min_score = min([r["final"] for r in records])
+    max_score = max([r["final"] for r in records])
+    score_range = max_score - min_score
+    for record in records:
+        x = median_length - record["avg_length"]
+        coef = np.tanh(x / (median_length * 3))
+        diff = score_range * min(0, coef)
+        record["length_norm_score"] = record["final"] + diff
+
+
     mapping = (
         ("model_name", "model_name"),
         ("final", "final_score"),
+        ("length_norm_score", "length_norm_score"),
         ("refusal_ratio", "refusal_ratio"),
         ("in_character", "stay_in_character_score"),
         ("fluency", "language_fluency_score"),
