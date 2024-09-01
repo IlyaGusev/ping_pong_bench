@@ -10,7 +10,7 @@ import pandas as pd  # type: ignore
 from tabulate import tabulate
 import numpy as np
 
-from src.build_html_testee_v2 import generate_html
+from src.build_player_html import generate_html
 
 
 def build_table(
@@ -39,6 +39,7 @@ def build_table(
             scores = output["scores"]
             output["player"] = player
             output["judge"] = judge
+            output["interrogator"] = data["interrogator"]
             is_refusal = scores["is_refusal"]
             player_scores[player_name].append(output)
             if max(is_refusal) == 1:
@@ -143,6 +144,7 @@ def build_table(
                         "outputs": records,
                         "player": records[0]["player"],
                         "judge": records[0]["judge"],
+                        "interrogator": records[0]["interrogator"],
                     }
                 )
             with open(output_path, "w", encoding="utf-8") as f:

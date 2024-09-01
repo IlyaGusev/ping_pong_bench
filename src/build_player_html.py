@@ -10,7 +10,7 @@ import fire  # type: ignore
 from src.util import encode_prompt
 
 
-def generate_html(data: Dict[str, Any], template_path: str = "templates/model_page.jinja") -> str:
+def generate_html(data: Dict[str, Any], template_path: str = "templates/player_page.jinja") -> str:
     characters: List[str] = sorted(set(o["character"]["char_name"] for o in data["outputs"]))
     situations: List[str] = sorted(set(o["situation"]["text"] for o in data["outputs"]))
     keys: Dict[str, Dict[str, str]] = {situation: {} for situation in situations}
@@ -82,6 +82,7 @@ def generate_html(data: Dict[str, Any], template_path: str = "templates/model_pa
         situations=situations,
         player=data.get("testee", data.get("player")),
         judge=data.get("tester", data.get("judge")),
+        interrogator=data.get("interrogator"),
         keys=keys,
         scores=scores,
         situation_averages=situation_averages,

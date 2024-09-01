@@ -9,7 +9,7 @@ import pandas as pd  # type: ignore
 from tabulate import tabulate
 import numpy as np
 
-from src.build_html_testee_v2 import generate_html
+from src.build_player_html import generate_html
 
 
 def build_table(

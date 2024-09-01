@@ -39,6 +39,7 @@
 </table>
 <h4>Judge</h4><code>{{judge|tojson}}</code>"
 <h4>Player</h4><code>{{player|tojson}}</code>
+{% if interrogator %}<h4>Interrogator</h4><code>{{interrogator|tojson}}</code>{% endif %}
 <div id="dialogContainer_{{judge["model_name"] | replace("-", "_") }}" class="dialog" hidden></div>
 <script>
     const dialogs_{{judge["model_name"] | replace("-", "_") }} = {{dialogs}}
