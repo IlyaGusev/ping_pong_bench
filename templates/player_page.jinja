@@ -70,7 +70,7 @@
                 dialogHtml += '<p class="' + message.role + '"><strong>' + message.role + ':</strong> ' + message.content + '</p>';
             }
             dialogHtml += '<h4>Scores</h4>';
-            dialogHtml += '<code>' + dialog["scores"] + '</code>';
+            dialogHtml += '<code>' + JSON.stringify(dialog["scores"]) + '</code>';
             container.innerHTML = dialogHtml;
             container.removeAttribute("hidden");
             container.scrollIntoView();

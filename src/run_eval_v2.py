@@ -138,6 +138,7 @@ def process_situation(
             character=character,
             character_prompt_path=settings.character_prompt_path,
         )
+        assert bot_message.strip()
         messages.append({"role": "assistant", "content": bot_message})
     judge_output = run_judge(
         character=character,
