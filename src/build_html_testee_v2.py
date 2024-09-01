@@ -31,7 +31,12 @@ def generate_html(data: Dict[str, Any], template_path: str = "templates/model_pa
         for char_name, output in char_outputs.items():
             assert "scores" in output
             example_scores = output["scores"]
-            if max(example_scores["is_refusal"]) == 1:
+            is_refusal = False
+            if "is_refusal" in example_scores and max(example_scores["is_refusal"]) == 1:
+                is_refusal = True
+            if "has_refusal" in output and output["has_refusal"]:
+                is_refusal = True
+            if is_refusal:
                 scores[situation][char_name] = None
             else:
                 scores[situation][char_name] = mean(
