@@ -58,7 +58,7 @@
             dialogHtml += '<p>Character: ' + dialog["character"] + '</p>';
             dialogHtml += '<p>Situation: ' + dialog["situation"] + '</p>';
             dialogHtml += '<h3>Dialog</h3>';
-            for (const message of dialog) {
+            for (const message of messages) {
                 dialogHtml += '<p class="' + message.role + '"><strong>' + message.role + ':</strong> ' + message.content + '</p>';
             }
             container.innerHTML = dialogHtml;
