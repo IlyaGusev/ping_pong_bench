@@ -94,7 +94,7 @@ def build_table(
             with open(input_path) as r:
                 data = json.load(r)
             html = generate_html(data)
-            html = "---\nlayout: default\n---" + html
+            html = "---\nlayout: default\n---\n" + html
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(html)
 
