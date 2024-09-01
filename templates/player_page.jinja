@@ -23,7 +23,15 @@
         <tr>
         <td>{{situation | truncate(50)}}</td>
         {% for char in characters %}
-        <td><a href="#" onclick="showDialog{{judge["model_name"] | replace("-", "_")}}(event, '{{keys[situation][char]}}')">{% if scores[situation][char] %}{{scores[situation][char] | round(2, 'floor')}}{% else %}REF{% endif %}</a></td>
+        <td>
+            {% if scores[situation][char] and keys[situation][char] %}
+                 <a href="#" onclick="showDialog{{judge["model_name"] | replace("-", "_")}}(event, '{{keys[situation][char]}}')">{{scores[situation][char] | round(2, 'floor')}}</a>
+            {% elif keys[situation][char] %}
+                 <a href="#" onclick="showDialog{{judge["model_name"] | replace("-", "_")}}(event, '{{keys[situation][char]}}')">REF</a>
+            {% else %}
+                 -
+            {% endif %}
+        </td>
         {% endfor %}
         <td class='average'>{% if not situation_averages[situation] %}REF{% else %}{{situation_averages[situation] | round(2, 'floor')}}{% endif %}</td>
         </tr>
