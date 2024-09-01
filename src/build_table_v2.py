@@ -22,7 +22,7 @@ def build_table(
     player_scores: Dict[str, List[Any]] = defaultdict(list)
     player_dialogs: Dict[str, Dict[str, Any]] = defaultdict(dict)
     player_refusals: Dict[str, Set[str]] = defaultdict(set)
-    player2name = dict()
+    player2shortname = dict()
     for file_name in os.listdir(results_dir):
         if not file_name.endswith(".json"):
             continue
@@ -32,7 +32,7 @@ def build_table(
         for output in data["outputs"]:
             player = data["player"]
             player_name = player["model_name"]
-            player2name[player_name] = file_name.split("player")[-1].replace(".json", "").strip("_")
+            player2shortname[player_name] = file_name.split("player")[-1].replace(".json", "").strip("_")
             player_dialogs[player_name][str(output["messages"])] = output["messages"]
             judge = data["judge"]
             judge_name = judge["model_name"]
@@ -71,7 +71,7 @@ def build_table(
     records = list()
     for player_name, key_scores in final_scores.items():
         record: Dict[str, Any] = {}
-        model_name = player2name[player_name]
+        model_name = player2shortname[player_name]
         record["model_name"] = (
             f"[{model_name}]({{{{ '/{results_dir}/{model_name}' | relative_url}}}})"
         )
@@ -127,13 +127,17 @@ def build_table(
     if dialogues_path:
         os.makedirs(dialogues_path, exist_ok=True)
         for player, scores in player_scores.items():
-            name = player2name[player]
+            name = player2shortname[player]
             judge2records = defaultdict(list)
             for record in scores:
                 judge2records[record["judge"]["model_name"]].append(record)
             output_path = os.path.join(dialogues_path, f"{name}.html")
             html = "---\nlayout: default\n---\n"
             for judge, records in judge2records.items():
+                player = records[0]["player"]
+                player["short_name"] = player2shortname[player["model_name"]]
+                judge = records[0]["judge"]
+                judge["short_name"] = player2shortname[judge["model_name"]]
                 html += generate_html(
                     {
                         "outputs": records,

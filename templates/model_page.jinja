@@ -1,6 +1,6 @@
 <style>
     h3 { margin: 10px 0px 10px; }
-    hr { margin-top: 10px; margin-bottom: 10px;}
+    hr { margin-top: 30px; margin-bottom: 30px; }
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid black; padding: 8px; text-align: left; }
     .average { font-weight: bold; }
@@ -8,7 +8,7 @@
     .user { color: #6a9fb5; }
     .assistant { color: #90a959; }
 </style>
-<h3>Scores: {{judge["model_name"]}}</h3>
+<h3>Scores for <b>{{player.get("short_name", player["model_name"])}}</b> by <b>{{judge.get("short_name", judge["model_name"])}}</b></h3>
 <table id="scoreTable">
     <tr>
         <th>Situation</th>
@@ -36,11 +36,9 @@
     <td class='average'>{{overall_average | round(2, 'floor')}}</td>
     </tr>
 </table>
-<h3>Judge</h3><code>{{judge|tojson}}</code>"
-<h3>Player</h3><code>{{player|tojson}}</code>
+<h4>Judge</h4><code>{{judge|tojson}}</code>"
+<h4>Player</h4><code>{{player|tojson}}</code>
 <div id="dialogContainer_{{judge["model_name"] | replace("-", "_") }}" class="dialog" hidden></div>
-<hr>
-<hr>
 <script>
     const dialogs_{{judge["model_name"] | replace("-", "_") }} = {{dialogs}}
 
@@ -66,4 +64,4 @@
             container.scrollIntoView();
         }
 </script>
-
+<hr>
