@@ -133,7 +133,7 @@ def build_table(
                 judge2records[record["judge"]["model_name"]].append(record)
             output_path = os.path.join(dialogues_path, f"{name}.html")
             html = "---\nlayout: default\n---\n"
-            for judge, records in judge2records.items():
+            for judge, records in sorted(judge2records.items()):
                 player = records[0]["player"]
                 player["short_name"] = player2shortname[player["model_name"]]
                 judge = records[0]["judge"]
