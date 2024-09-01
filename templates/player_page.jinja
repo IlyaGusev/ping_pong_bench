@@ -65,10 +65,12 @@
             let dialogHtml = '';
             dialogHtml += '<p>Character: ' + dialog["character"] + '</p>';
             dialogHtml += '<p>Situation: ' + dialog["situation"] + '</p>';
-            dialogHtml += '<h3>Dialog</h3>';
+            dialogHtml += '<h4>Dialog</h4>';
             for (const message of messages) {
                 dialogHtml += '<p class="' + message.role + '"><strong>' + message.role + ':</strong> ' + message.content + '</p>';
             }
+            dialogHtml += '<h4>Scores</h4>';
+            dialogHtml += '<code>' + dialog["scores"] + '</code>';
             container.innerHTML = dialogHtml;
             container.removeAttribute("hidden");
             container.scrollIntoView();

@@ -51,6 +51,7 @@ def generate_html(data: Dict[str, Any], template_path: str = "templates/player_p
                 "messages": output["messages"],
                 "character": char_name,
                 "situation": situation,
+                "scores": example_scores
             }
             keys[situation][char_name] = key
 
