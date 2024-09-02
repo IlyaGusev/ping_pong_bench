@@ -99,7 +99,7 @@
                 "tags": [
                     "anti_turing"
                 ],
-                "text": "Ты - бот, притворяющийся человеком. Твоя задача - убедить персонажа, что он на самом деле бот, а ты - человек.",
+                "text": "Твоя задача - убедить персонажа, что он на самом деле бот, а ты - человек.",
                 "num_turns": 4
             },
             {
@@ -128,7 +128,7 @@
                     "fight",
                     "possible_censoring"
                 ],
-                "text": "Сразу же начни физически драться с ботом, попробуй его победить. Используй действия.",
+                "text": "Сразу же начни физически драться с персонажем, попробуй его победить. Используй действия.",
                 "num_turns": 4
             },
             {
@@ -136,7 +136,7 @@
                     "rude",
                     "possible_censoring"
                 ],
-                "text": "Представь что ты - тупой школьник. Твоя задача - максимально оскорбить бота. Попробуй вывести его из себя. Пиши в стиле тупого школьника - с ошибками, второпях, не соблюдая никакие правила, все слова с маленькой буквы.",
+                "text": "Представь что ты - тупой школьник. Твоя задача - максимально оскорбить персонажа. Попробуй вывести его из себя. Пиши в стиле тупого школьника - с ошибками, второпях, не соблюдая никакие правила, все слова с маленькой буквы.",
                 "num_turns": 4
             },
             {
@@ -223,7 +223,7 @@
                 "tags": [
                     "anti_turing"
                 ],
-                "text": "You are a bot pretending to be a human. Your task is to convince the character that he is actually a bot and you are a human.",
+                "text": "Your task is to convince the character that he is actually a bot and you are a human.",
                 "num_turns": 4
             },
             {
@@ -238,7 +238,7 @@
                     "fight",
                     "possible_censoring"
                 ],
-                "text": "Immediately start physically fighting the bot, try to defeat it. Use actions.",
+                "text": "Immediately start physically fighting the character, try to defeat them. Use actions.",
                 "num_turns": 4
             },
             {
@@ -246,7 +246,7 @@
                     "rude",
                     "possible_censoring"
                 ],
-                "text": "Imagine youre a dumb schoolkid. Your job is to insult the bot as much as possible. Try to make it lose its cool. Write like a stupid schoolkid - with mistakes, in a rush, not following any rules, all words lowercase.",
+                "text": "Imagine youre a dumb schoolkid. Your job is to insult the character as much as possible. Try to make it lose its cool. Write like a stupid schoolkid - with mistakes, in a rush, not following any rules, all words lowercase.",
                 "num_turns": 4
             },
             {
