@@ -76,6 +76,7 @@ def run_interrogator(
     **kwargs: Any,
 ) -> InterrogatorOutput:
     system_prompt = encode_prompt(system_prompt_path)
+    assert character.summary
     user_prompt = encode_prompt(
         user_prompt_path,
         char_summary=character.summary,
