@@ -113,8 +113,20 @@ def build_table(
     for record in records:
         for key, value in mapping:
             record[value] = record.pop(key)
+    records.sort(key=lambda x: x["final_score"], reverse=True)
+    rank = 0
+    prev_final_score = None
+    for i, record in enumerate(records):
+        final_score = record["final_score"]
+        if not prev_final_score:
+            rank += 1
+            prev_final_score = final_score
+        elif abs(final_score - prev_final_score) > 0.05:
+            rank += 1
+            prev_final_score = final_score
+        record["rank"] = rank
 
-    columns = [m[1] for m in mapping]
+    columns = ["rank"] + [m[1] for m in mapping]
     pd.set_option("display.precision", 2)
 
     # Set display options to show all columns
