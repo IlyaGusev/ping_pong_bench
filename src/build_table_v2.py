@@ -93,16 +93,19 @@ def build_table(
     max_score = max([r["final"] for r in records])
     score_range = max_score - min_score
     for record in records:
-        x = median_length - record["avg_length"]
-        coef = np.tanh(x / (median_length * 3))
-        diff = score_range * min(0, coef)
-        record["length_norm_score"] = record["final"] + diff
+        score = record["final"]
+        adjustment_factor = 0.15
+        x = median_length / record["avg_length"]
+        x = 1 + (x - 1) * adjustment_factor
+        x = max(x, 1 - adjustment_factor)
+        x = min(x, 1)
+        record["length_norm_score"] = score * x
 
 
     mapping = (
         ("model_name", "model_name"),
-        ("final", "final_score"),
         ("length_norm_score", "length_norm_score"),
+        ("final", "aggregated_score"),
         ("refusal_ratio", "refusal_ratio"),
         ("in_character", "stay_in_character_score"),
         ("fluency", "language_fluency_score"),
@@ -113,11 +116,11 @@ def build_table(
     for record in records:
         for key, value in mapping:
             record[value] = record.pop(key)
-    records.sort(key=lambda x: x["final_score"], reverse=True)
+    records.sort(key=lambda x: x["length_norm_score"], reverse=True)
     rank = 0
     prev_final_score = None
     for i, record in enumerate(records):
-        final_score = record["final_score"]
+        final_score = record["length_norm_score"]
         if not prev_final_score:
             rank += 1
             prev_final_score = final_score
@@ -134,7 +137,7 @@ def build_table(
     pd.set_option("display.width", None)
     pd.set_option("display.max_colwidth", None)
 
-    df = pd.DataFrame(records).sort_values(by="final_score", ascending=False)[columns]
+    df = pd.DataFrame(records).sort_values(by="length_norm_score", ascending=False)[columns]
     print(df)
 
     # Convert DataFrame to list of lists for tabulate
