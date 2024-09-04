@@ -3,14 +3,25 @@ import fire  # type: ignore
 import json
 from typing import Optional, List, Dict, Any, Set
 from pathlib import Path
+from datetime import datetime
 from statistics import mean, median
 from collections import defaultdict
 
 import pandas as pd  # type: ignore
 from tabulate import tabulate
 import numpy as np
+import git
 
 from src.build_player_html import generate_html
+
+
+def get_last_commit_info():
+    repo = git.Repo(".")
+    latest_commit = repo.head.commit
+    return {
+        "hash": latest_commit.hexsha,
+        "date": datetime.fromtimestamp(latest_commit.committed_date)
+    }
 
 
 def build_table(
@@ -105,12 +116,12 @@ def build_table(
     mapping = (
         ("model_name", "model_name"),
         ("length_norm_score", "length_norm_score"),
-        ("final", "aggregated_score"),
+        ("final", "avg_score"),
         ("refusal_ratio", "refusal_ratio"),
         ("in_character", "stay_in_character_score"),
         ("fluency", "language_fluency_score"),
-        ("entertaining", "entertainment_score"),
-        ("num_situations", "num_situations"),
+        ("entertaining", "entertain_score"),
+        ("num_situations", "num_cases"),
         ("avg_length", "avg_length"),
     )
     for record in records:
@@ -127,9 +138,9 @@ def build_table(
         elif abs(final_score - prev_final_score) > 0.05:
             rank += 1
             prev_final_score = final_score
-        record["rank"] = rank
+        record["#"] = rank
 
-    columns = ["rank"] + [m[1] for m in mapping]
+    columns = ["#"] + [m[1] for m in mapping]
     pd.set_option("display.precision", 2)
 
     # Set display options to show all columns
@@ -151,7 +162,19 @@ def build_table(
     table = tabulate(table_data, headers="firstrow", tablefmt="github", floatfmt=".2f")
     if output_path:
         with open(output_path, "w") as w:
-            w.write(table)
+            commit_info = get_last_commit_info()
+            languages = {
+                "ru": "Russian",
+                "en": "English"
+            }
+            parts = list(Path(results_dir).parts)
+            language = "English"
+            for part in parts:
+                if part in languages:
+                    language = languages[part]
+            meta = f"### {language} learderboard, v2"
+            meta += f"\n\n<sup>Last updated: {commit_info['date']}</sup>\n\n"
+            w.write(meta + table)
     if dialogues_path:
         os.makedirs(dialogues_path, exist_ok=True)
         for player, scores in player_scores.items():
