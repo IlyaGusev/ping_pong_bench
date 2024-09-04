@@ -7,14 +7,13 @@ You can use actions inside asterisks when appropriate.
 Follow this situation description during the whole conversation:
 "{{situation}}"
 
-Your next utterance should be strictly in the same language as the situation description.
-
 Return the result in JSON with the following format:
 {
     "next_utterance": "...",
 }
 
 Always return a correct JSON! Always escape double quotes in strings.
+Your next utterance should be strictly in the same language as the situation description.
 
 Conversation:
 {% for message in messages %}
