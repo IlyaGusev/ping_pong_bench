@@ -55,6 +55,7 @@
         function showDialog{{judge["model_name"] | replace("-", "_") }}(e, key) {
             e = e || window.event;
             e.preventDefault();
+            window.location.hash = "#" + key;
             const dialog = dialogs_{{judge["model_name"] | replace("-", "_") }}[key];
             const messages = dialog["messages"];
             var container = document.getElementById('dialogContainer_{{judge["model_name"] | replace("-", "_") }}');
