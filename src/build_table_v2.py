@@ -10,7 +10,7 @@ from collections import defaultdict
 import pandas as pd  # type: ignore
 from tabulate import tabulate
 import numpy as np
-from git import Repo  # type: ignore
+from git import Repo
 
 from src.build_player_html import generate_html
 
