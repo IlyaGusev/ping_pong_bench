@@ -10,13 +10,13 @@ from collections import defaultdict
 import pandas as pd  # type: ignore
 from tabulate import tabulate
 import numpy as np
-import git
+from git import Repo  # type: ignore
 
 from src.build_player_html import generate_html
 
 
-def get_last_commit_info():
-    repo = git.Repo(".")
+def get_last_commit_info() -> Dict[str, Any]:
+    repo = Repo(".")
     latest_commit = repo.head.commit
     return {
         "hash": latest_commit.hexsha,
@@ -99,19 +99,19 @@ def build_table(
         record.update(scores)
         records.append(record)
 
+    # Length normalization
+    adjustment_factor = 0.1
     median_length = median([r["avg_length"] for r in records])
     min_score = min([r["final"] for r in records])
     max_score = max([r["final"] for r in records])
     score_range = max_score - min_score
     for record in records:
         score = record["final"]
-        adjustment_factor = 0.15
         x = median_length / record["avg_length"]
         x = 1 + (x - 1) * adjustment_factor
         x = max(x, 1 - adjustment_factor)
         x = min(x, 1)
         record["length_norm_score"] = score * x
-
 
     mapping = (
         ("model_name", "model_name"),
