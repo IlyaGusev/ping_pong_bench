@@ -112,3 +112,8 @@ flake8 src
 black src --line-length 100
 mypy src --strict
 ```
+
+## Contact
+
+- Telegram: [YallenGusev](https://t.me/YallenGusev)
+- Discord: [yallengusev](https://discord.com/users/yallengusev)

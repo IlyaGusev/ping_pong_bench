@@ -100,10 +100,10 @@ def build_table(
         records.append(record)
 
     # Length normalization
-    adjustment_factor = 0.1
     median_length = median([r["avg_length"] for r in records])
     min_score = min([r["final"] for r in records])
     max_score = max([r["final"] for r in records])
+    adjustment_factor = 0.07
     score_range = max_score - min_score
     for record in records:
         score = record["final"]
