@@ -1,0 +1,17 @@
+---
+layout: default
+title: Request form
+---
+<h1>Request form</h1>
+<form action="mailto:phoenixilya@gmail.com" method="post" enctype="text/plain" style="display: flex;flex-direction: column;">
+    <label for="requester">Who is requesting:</label>
+    <input type="text" id="requester" name="requester" style="margin-bottom: 15px;padding: 5px;" required>
+
+    <label for="model">Model name:</label>
+    <input type="text" id="model" name="model" style="margin-bottom: 15px;padding: 5px;" required>
+
+    <label for="parameters">Sampling parameters:</label>
+    <textarea id="parameters" name="parameters" rows="4" style="margin-bottom: 15px;padding: 5px;" required></textarea>
+
+    <button type="submit" style="padding: 10px;border: none;cursor: pointer;">Submit (via e-mail)</button>
+</form>
