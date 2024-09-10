@@ -3,5 +3,4 @@ description: A benchmark for role-playing LLMs
 theme: jekyll-theme-hacker
 baseurl: /ping_pong_bench/
 url: https://ilyagusev.github.io/
-google_analytics: G-8ML3TKDM42
 github_username: IlyaGusev
