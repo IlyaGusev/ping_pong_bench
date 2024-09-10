@@ -73,7 +73,7 @@ assistant: *Kurisu's cheeks flush slightly with irritation* Oh, please. Now you'
 pip3 install -r requirements.txt
 ```
 
-Create providers.json based on [roviders.example.json](https://github.com/IlyaGusev/ping_pong_bench/blob/main/providers.example.json). It supports OpenAI-like APIs.
+Create providers.json based on [providers.example.json](https://github.com/IlyaGusev/ping_pong_bench/blob/main/providers.example.json). It supports OpenAI-like APIs.
 
 ## Run
 Example run:
