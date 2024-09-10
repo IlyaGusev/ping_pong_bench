@@ -68,7 +68,7 @@
             dialogHtml += '<p>Situation: ' + dialog["situation"] + '</p>';
             dialogHtml += '<h4>Dialog</h4>';
             for (const message of messages) {
-                dialogHtml += '<p class="' + message.role + '"><strong>' + message.role + ':</strong> ' + message.content.replace('\n', '<br><br>') + '</p>';
+                dialogHtml += '<p class="' + message.role + '"><strong>' + message.role + ':</strong> ' + message.content.replace('\n', '<br><br>') + '</p><br>';
             }
             dialogHtml += '<h4>Scores</h4>';
             dialogHtml += '<code>' + JSON.stringify(dialog["scores"]) + '</code>';
@@ -76,5 +76,16 @@
             container.removeAttribute("hidden");
             container.scrollIntoView();
         }
+    function getKeyFromHash() {
+        const hash = window.location.hash;
+        return hash.substring(1);
+    }
+    function handleHashChange() {
+        const key = getKeyFromHash();
+        if (key) {
+            showDialog{{judge["model_name"] | replace("-", "_") }}(undefined, key);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', handleHashChange);
 </script>
 <hr>
