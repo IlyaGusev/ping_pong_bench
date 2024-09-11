@@ -68,7 +68,8 @@
             dialogHtml += '<p>Situation: ' + dialog["situation"] + '</p>';
             dialogHtml += '<h4>Dialog</h4>';
             for (const message of messages) {
-                dialogHtml += '<p class="' + message.role + '"><strong>' + message.role + ':</strong> ' + message.content.replace('\n', '<br><br>') + '</p><br>';
+                const newRole = (message.role == "assistant") ? "player" : "interrogator";
+                dialogHtml += '<p class="' + message.role + '"><strong>' + newRole + ':</strong> ' + message.content.replace('\n', '<br><br>') + '</p><br>';
             }
             dialogHtml += '<h4>Scores</h4>';
             dialogHtml += '<code>' + JSON.stringify(dialog["scores"]) + '</code>';
