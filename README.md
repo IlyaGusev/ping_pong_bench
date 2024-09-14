@@ -6,15 +6,15 @@ Website: [link](https://ilyagusev.github.io/ping_pong_bench/)
 
 Paper: [link](https://arxiv.org/abs/2409.06820)
 
-[LLM-as-a-Judge](https://arxiv.org/abs/2306.05685) is an evaluation method that relies on solid LLMs such as GPT-4 instead of humans. In this benchmark, we rely on LLMs not only to judge the answer but also to ask the questions.
+LLM-as-a-Judge is an evaluation method that relies on solid LLMs such as GPT-4 instead of humans. In this benchmark, we rely on LLMs not only to judge the answer but also to ask the questions.
 
-We believe the only way to evaluate a language model's conversational abilities is to talk with it. However, humans usually don't have enough time to talk with new models, and many popular benchmarks are single-turn. So, the main idea of this benchmark is to use LLMs **to emulate users** in role-playing conversations.
+We believe talking with a language model's conversational abilities is the only way to evaluate it. However, humans usually don't have enough time to talk with new models, and many popular benchmarks are single-turn. So, the main idea of this benchmark is to use LLMs **to emulate users** in role-playing conversations.
 
-For that, we have a set of characters and test situations. A strong enough model interacts with characters pretending to be users with different goals. After each interaction, the responder model answers are rated. See the example below.
+For that, we have a set of characters and test situations. A strong enough model interacts with characters pretending to be users with different goals. After each interaction, the responder model answers are rated. Please take a look at the example below.
 
-For now, we use three criteria for evaluation: whether the bot was in-character, entertaining, and fluent.
+For now, we use three criteria for evaluation: whether the bot was in character, entertaining, and fluent.
 
-To compose the final rating, we average numbers across criteria, characters, and situations.
+We average numbers across criteria, characters, and situations to compose the final rating.
 
 ### Character
 ```
