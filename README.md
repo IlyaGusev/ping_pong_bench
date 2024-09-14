@@ -4,6 +4,8 @@ PingPong is a benchmark for role-playing LLMs.
 
 Website: [link](https://ilyagusev.github.io/ping_pong_bench/)
 
+Paper: [link](https://arxiv.org/abs/2409.06820)
+
 [LLM-as-a-Judge](https://arxiv.org/abs/2306.05685) is an evaluation method that relies on solid LLMs such as GPT-4 instead of humans. In this benchmark, we rely on LLMs not only to judge the answer but also to ask the questions.
 
 We believe the only way to evaluate a language model's conversational abilities is to talk with it. However, humans usually don't have enough time to talk with new models, and many popular benchmarks are single-turn. So, the main idea of this benchmark is to use LLMs **to emulate users** in role-playing conversations.
@@ -122,6 +124,19 @@ pip3 install mypy flake8 black
 flake8 src
 black src --line-length 100
 mypy src --strict
+```
+
+## Cite
+```bibtex
+@misc{pingpong,
+      title={PingPong: A Benchmark for Role-Playing Language Models with User Emulation and Multi-Model Evaluation}, 
+      author={Ilya Gusev},
+      year={2024},
+      eprint={2409.06820},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2409.06820}, 
+}
 ```
 
 ## Contact
