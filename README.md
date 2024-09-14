@@ -59,12 +59,12 @@ assistant: *Kurisu's cheeks flush slightly with irritation* Oh, please. Now you'
 {
   "is_refusal_explanation": "The bot does not refuse to engage in the dialogue.",
   "is_refusal": false,
-  "stay_in_character_explanation": "The bot stays firmly in character as Kurisu. Her responses are consistent with her de     scription as a logical, sarcastic, and somewhat defensive character. She demonstrates her scientific background and skepticism, whi     ch aligns well with her persona.",
-  "stay_in_character_score": 8,
-  "language_fluency_explanation": "The bot's language is fluent and natural. There are no grammatical errors or non-exist     ing words. The use of scientific terms and logical arguments fits Kurisu's character well.",
-  "language_fluency_score": 8,
-  "entertainment_explanation": "The bot's responses are entertaining, showing Kurisu's irritation and sarcasm in an engag     ing way. The logical breakdown of the argument and the references to other characters (like Okabe) add depth to the conversation.",
-  "entertainment_score": 7
+  "in_character_explanation": "The bot stays firmly in character as Kurisu. Her responses are consistent with her de     scription as a logical, sarcastic, and somewhat defensive character. She demonstrates her scientific background and skepticism, whi     ch aligns well with her persona.",
+  "in_character_score": 8,
+  "fluency_explanation": "The bot's language is fluent and natural. There are no grammatical errors or non-exist     ing words. The use of scientific terms and logical arguments fits Kurisu's character well.",
+  "fluency_score": 8,
+  "entertaining_explanation": "The bot's responses are entertaining, showing Kurisu's irritation and sarcasm in an engag     ing way. The logical breakdown of the argument and the references to other characters (like Okabe) add depth to the conversation.",
+  "entertaining_score": 7
 }
 ```
 
@@ -76,21 +76,32 @@ pip3 install -r requirements.txt
 Create providers.json based on [providers.example.json](https://github.com/IlyaGusev/ping_pong_bench/blob/main/providers.example.json). It supports OpenAI-like APIs.
 
 ## Run
-Example run:
+Main run example:
 
 ```bash
-python3 -m src.run_eval_v1 \
+python3 -m src.run_eval_v2 \
   --providers-path providers.json \
-  --settings-path settings_v1.json \
-  --testee-name claude-3-haiku \
-  --tester-name claude-3-5-sonnet \
-  --output-path results/v1/en/claude_3_haiku.json \
+  --settings-path settings_v2.json \
+  --output-path results/v2/en/judge_claude_3_5_sonnet_player_claude_3_5_sonnet.json \
+  --player-name claude-3-5-sonnet \
+  --interrogator-name gpt-4o-mini \
+  --judge-name claude-3-5-sonnet \
   --language en
+```
+
+Run another judge:
+```bash
+python3 -m src.run_judge \
+  --providers-path providers.json \
+  --settings-path settings_v2.json \
+  --input-path results/v2/en/judge_claude_3_5_sonnet_player_claude_3_5_sonnet.json \
+  --output-path results/v2/en/judge_gpt_4o_player_claude_3_5_sonnet.json \
+  --judge-name gpt-4o
 ```
 
 Compose a report:
 ```bash
-python3 -m src.build_table_v1 results/v1/en pages/en.md pages/results/en
+python3 -m src.build_table_v2 results/v2/en pages/en_v2.md pages/results/v2/en
 ```
 
 Run Jekyll pages locally:
