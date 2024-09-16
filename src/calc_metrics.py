@@ -10,7 +10,7 @@ from scipy.stats import spearmanr  # type: ignore
 import networkx as nx  # type: ignore
 import matplotlib.pyplot as plt  # type: ignore
 from pyvis.network import Network  # type: ignore
-from scipy.stats import spearmanr, kendalltau  # type: ignore
+from scipy.stats import spearmanr, kendalltau
 
 
 def main(input_dir: str) -> None:
