@@ -41,9 +41,21 @@ def generate_html(data: Dict[str, Any], template_path: str = "templates/player_p
             else:
                 scores[situation][char_name] = mean(
                     [
-                        mean(example_scores.get("stay_in_character", example_scores.get("in_character", []))),
-                        mean(example_scores.get("language_fluency", example_scores.get("fluency", []))),
-                        mean(example_scores.get("entertainment", example_scores.get("entertaining", []))),
+                        mean(
+                            example_scores.get(
+                                "stay_in_character", example_scores.get("in_character", [])
+                            )
+                        ),
+                        mean(
+                            example_scores.get(
+                                "language_fluency", example_scores.get("fluency", [])
+                            )
+                        ),
+                        mean(
+                            example_scores.get(
+                                "entertainment", example_scores.get("entertaining", [])
+                            )
+                        ),
                     ]
                 )
             key = base64.b64encode(f"{char_name}::{situation}".encode("utf-8")).decode("utf-8")
@@ -51,7 +63,7 @@ def generate_html(data: Dict[str, Any], template_path: str = "templates/player_p
                 "messages": output["messages"],
                 "character": char_name,
                 "situation": situation,
-                "scores": example_scores
+                "scores": example_scores,
             }
             keys[situation][char_name] = key
 
@@ -89,7 +101,7 @@ def generate_html(data: Dict[str, Any], template_path: str = "templates/player_p
         situation_averages=situation_averages,
         character_averages=character_averages,
         overall_average=overall_average,
-        dialogs=json.dumps(dialogs)
+        dialogs=json.dumps(dialogs),
     )
     return html_content
 

@@ -4,7 +4,7 @@ from collections import defaultdict
 from statistics import mean
 
 import fire  # type: ignore
-from scipy.stats import spearmanr  # type: ignore
+from scipy.stats import spearmanr, kendalltau  # type: ignore
 
 
 def main(
@@ -50,10 +50,15 @@ def main(
     print("Support:", len(final_human_scores))
     for key, ref_scores in human_scores.items():
         pred_scores = model_scores[key]
-        corr = spearmanr(ref_scores, pred_scores)[0]
-        print(f"{key}, {corr:.3f}")
+        spearman_corr = spearmanr(ref_scores, pred_scores)[0]
+        kendall = kendalltau(pred_scores, ref_scores).statistic
+        print(f"Spearman, {key}, {spearman_corr:.3f}")
+        print(f"Kendall, {key}, {kendall:.3f}")
+
     final_corr = spearmanr(final_human_scores, final_model_scores)[0]
-    print(f"final, {final_corr:.3f}")
+    final_kendall = kendalltau(final_human_scores, final_model_scores).statistic
+    print(f"Spearman, final, {final_corr:.3f}")
+    print(f"Kendall, final, {final_kendall:.3f}")
 
     print()
     print("Human learderboard:")

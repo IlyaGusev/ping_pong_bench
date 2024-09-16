@@ -20,7 +20,7 @@ def get_last_commit_info() -> Dict[str, Any]:
     latest_commit = repo.head.commit
     return {
         "hash": latest_commit.hexsha,
-        "date": datetime.fromtimestamp(latest_commit.committed_date)
+        "date": datetime.fromtimestamp(latest_commit.committed_date),
     }
 
 
@@ -43,7 +43,9 @@ def build_table(
         for output in data["outputs"]:
             player = data["player"]
             player_name = player["model_name"]
-            player2shortname[player_name] = file_name.split("player")[-1].replace(".json", "").strip("_")
+            player2shortname[player_name] = (
+                file_name.split("player")[-1].replace(".json", "").strip("_")
+            )
             player_dialogs[player_name][str(output["messages"])] = output["messages"]
             judge = data["judge"]
             judge_name = judge["model_name"]
@@ -163,10 +165,7 @@ def build_table(
     if output_path:
         with open(output_path, "w") as w:
             commit_info = get_last_commit_info()
-            languages = {
-                "ru": "Russian",
-                "en": "English"
-            }
+            languages = {"ru": "Russian", "en": "English"}
             parts = list(Path(results_dir).parts)
             language = "English"
             for part in parts:

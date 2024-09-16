@@ -29,7 +29,9 @@ def parse_output(output: str) -> Dict[str, Any]:
     return record
 
 
-def generate(messages: ChatMessages, provider: LLMProvider, **kwargs: Any) -> str:
+def generate(
+    messages: ChatMessages, provider: LLMProvider, fix_double_spaces: bool = True, **kwargs: Any
+) -> str:
     params = copy.deepcopy(provider.params)
     for k, v in kwargs.items():
         params[k] = v
@@ -50,7 +52,10 @@ def generate(messages: ChatMessages, provider: LLMProvider, **kwargs: Any) -> st
     chat_completion = provider.api.chat.completions.create(
         model=provider.model_name, messages=casted_messages, **params
     )
-    return str(chat_completion.choices[0].message.content).strip()
+    output = str(chat_completion.choices[0].message.content).strip()
+    if fix_double_spaces:
+        output = output.replace("  ", " ")
+    return output
 
 
 def save(

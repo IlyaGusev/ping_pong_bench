@@ -10,6 +10,7 @@ from scipy.stats import spearmanr  # type: ignore
 import networkx as nx  # type: ignore
 import matplotlib.pyplot as plt  # type: ignore
 from pyvis.network import Network  # type: ignore
+from scipy.stats import spearmanr, kendalltau  # type: ignore
 
 
 def main(input_dir: str) -> None:
@@ -57,8 +58,9 @@ def main(input_dir: str) -> None:
         sonnet_scores.append(example_judge_scores["claude-3-5-sonnet-20240620"])
 
     print("Support:", len(human_scores))
-    print("Sonnet only:", spearmanr(human_scores, sonnet_scores)[0])
+    print("Sonnet only, Spearman:", spearmanr(human_scores, sonnet_scores)[0])
     print("Sonnet and GPT-4o:", spearmanr(human_scores, top_2_scores)[0])
+    print("Sonnet and GPT-4o, Kendall:", kendalltau(human_scores, top_2_scores).statistic)
 
 
 if __name__ == "__main__":

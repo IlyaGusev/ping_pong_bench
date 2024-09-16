@@ -50,7 +50,7 @@ def run_player(
                 messages=messages,
                 **provider.params,
             )
-            assert output.strip()
+            assert output.strip() and len(output.strip()) >= 2
             print(output)
             print()
             print("=============")
