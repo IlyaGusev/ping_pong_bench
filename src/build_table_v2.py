@@ -92,7 +92,7 @@ def build_table(
             final_score = mean([weights[k] * v for k, v in scores.items()])
             final_scores[player_name][key].append(final_score)
 
-    records = list()
+    players = dict()
     for player_name, key_scores in final_scores.items():
         record: Dict[str, Any] = {}
         model_name = player2shortname[player_name]
@@ -107,29 +107,34 @@ def build_table(
         record["refusal_ratio"] = len(player_refusals[player_name]) / len(
             player_dialogs[player_name]
         )
-        scores = {k: mean(s) for k, s in key_scores.items()}
         for k, s in key_scores.items():
             m, ci_lower, ci_upper = bootstrap_mean(s)
             record[k] = m
             record[k + "_ci_width"] = (ci_upper - ci_lower) / 2
-        records.append(record)
+        players[player_name] = record
 
     # Length normalization
-    median_length = median([r["avg_length"] for r in records])
-    min_score = min([r["final"] for r in records])
-    max_score = max([r["final"] for r in records])
-    adjustment_factor = 0.07
+    median_length = median([r["avg_length"] for r in players.values()])
+    min_score = min([r["final"] for r in players.values()])
+    max_score = max([r["final"] for r in players.values()])
     score_range = max_score - min_score
-    for record in records:
-        score = record["final"]
+    adjustment_factor = 0.07
+    for player_name, key_scores in final_scores.items():
+        record = players[player_name]
         x = median_length / record["avg_length"]
         x = 1 + (x - 1) * adjustment_factor
         x = max(x, 1 - adjustment_factor)
         x = min(x, 1)
-        record["length_norm_score"] = score * x
 
+        s = [s * x for s in key_scores["final"]]
+        m, ci_lower, ci_upper = bootstrap_mean(s)
+        record["length_norm_score"] = m
+        record["length_norm_score_ci_width"] = (ci_upper - ci_lower) / 2
+
+    records = list(players.values())
     for record in records:
         record["final"] = "{:.2f}<sub><sup>±{:.2f}</sup></sub>".format(record["final"], record.pop("final_ci_width"))
+        record["length_norm_score"] = "{:.2f}<sub><sup>±{:.2f}</sup></sub>".format(record["length_norm_score"], record.pop("length_norm_score_ci_width"))
 
     mapping = (
         ("model_name", "model_name"),
@@ -149,7 +154,7 @@ def build_table(
     rank = 0
     prev_final_score = None
     for i, record in enumerate(records):
-        final_score = record["length_norm_score"]
+        final_score = float(record["length_norm_score"].split("<sub>")[0])
         if not prev_final_score:
             rank += 1
             prev_final_score = final_score
