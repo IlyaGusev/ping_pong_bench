@@ -1,7 +1,7 @@
 import os
 import fire  # type: ignore
 import json
-from typing import Optional, List, Dict, Any, Set
+from typing import Optional, List, Dict, Any, Set, Tuple
 from pathlib import Path
 from datetime import datetime
 from statistics import mean, median
@@ -13,6 +13,16 @@ import numpy as np
 from git import Repo
 
 from src.build_player_html import generate_html
+
+
+def bootstrap_mean(data: List[float], n_bootstrap: int = 1000) -> Tuple[float, float, float]:
+    means = []
+    for _ in range(n_bootstrap):
+        sample = np.random.choice(data, size=len(data), replace=True)
+        means.append(np.mean(sample))
+        point_estimate = np.mean(means)
+        ci_lower, ci_upper = np.percentile(means, [5, 95])
+    return point_estimate, ci_lower, ci_upper
 
 
 def get_last_commit_info() -> Dict[str, Any]:
@@ -98,7 +108,10 @@ def build_table(
             player_dialogs[player_name]
         )
         scores = {k: mean(s) for k, s in key_scores.items()}
-        record.update(scores)
+        for k, s in key_scores.items():
+            m, ci_lower, ci_upper = bootstrap_mean(s)
+            record[k] = m
+            record[k + "_ci_width"] = (ci_upper - ci_lower) / 2
         records.append(record)
 
     # Length normalization
@@ -114,6 +127,9 @@ def build_table(
         x = max(x, 1 - adjustment_factor)
         x = min(x, 1)
         record["length_norm_score"] = score * x
+
+    for record in records:
+        record["final"] = "{:.2f}<sub><sup>±{:.2f}</sup></sub>".format(record["final"], record.pop("final_ci_width"))
 
     mapping = (
         ("model_name", "model_name"),
@@ -137,7 +153,7 @@ def build_table(
         if not prev_final_score:
             rank += 1
             prev_final_score = final_score
-        elif abs(final_score - prev_final_score) > 0.05:
+        elif abs(final_score - prev_final_score) > 0.06:
             rank += 1
             prev_final_score = final_score
         record["#"] = rank
