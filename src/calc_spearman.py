@@ -50,14 +50,14 @@ def main(
     print("Support:", len(final_human_scores))
     for key, ref_scores in human_scores.items():
         pred_scores = model_scores[key]
-        spearman_corr = spearmanr(ref_scores, pred_scores)[0]
+        spearman_corr, spearman_corr_p = spearmanr(ref_scores, pred_scores)
         kendall = kendalltau(pred_scores, ref_scores).statistic
-        print(f"Spearman, {key}, {spearman_corr:.3f}")
+        print(f"Spearman, {key}, {spearman_corr:.3f}, p={spearman_corr_p}")
         print(f"Kendall, {key}, {kendall:.3f}")
 
-    final_corr = spearmanr(final_human_scores, final_model_scores)[0]
+    final_corr, final_corr_p = spearmanr(final_human_scores, final_model_scores)
     final_kendall = kendalltau(final_human_scores, final_model_scores).statistic
-    print(f"Spearman, final, {final_corr:.3f}")
+    print(f"Spearman, final, {final_corr:.3f}, p={final_corr_p}")
     print(f"Kendall, final, {final_kendall:.3f}")
 
     print()
