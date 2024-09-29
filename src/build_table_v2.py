@@ -156,10 +156,10 @@ def build_table(
     for i, record in enumerate(records):
         final_score = float(record["length_norm_score"].split("<sub>")[0])
         if not prev_final_score:
-            rank += 1
+            rank = i + 1
             prev_final_score = final_score
         elif abs(final_score - prev_final_score) > 0.06:
-            rank += 1
+            rank = i + 1
             prev_final_score = final_score
         record["#"] = rank
 
