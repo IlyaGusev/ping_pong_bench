@@ -64,8 +64,8 @@
                 return;
             }
             let dialogHtml = '';
-            dialogHtml += '<p>Player's character: ' + dialog["character"] + '</p>';
-            dialogHtml += '<p>Interrogator's situation: ' + dialog["situation"] + '</p>';
+            dialogHtml += '<p>Character for Player: ' + dialog["character"] + '</p>';
+            dialogHtml += '<p>Situation for Interrogator: ' + dialog["situation"] + '</p>';
             dialogHtml += '<h4>Dialog</h4>';
             for (const message of messages) {
                 const newRole = (message.role == "assistant") ? "player" : "interrogator";
