@@ -13,7 +13,13 @@ from pyvis.network import Network  # type: ignore
 from scipy.stats import spearmanr, kendalltau
 
 
-def main(input_dir: str) -> None:
+def main(input_dir: str, golden_path: str) -> None:
+    golden_records = dict()
+    with open(golden_path) as r:
+        for line in r:
+            record = json.loads(line)
+            golden_records[str(record["messages"])] = record["human_scores"]
+
     all_scores: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
     for name in os.listdir(input_dir):
         path = os.path.join(input_dir, name)
@@ -31,12 +37,14 @@ def main(input_dir: str) -> None:
     human_scores = []
     sonnet_scores = []
     top_2_scores = []
-    for _, example_scores in all_scores.items():
+    for key, example_scores in all_scores.items():
         example_human_scores = None
         example_judge_scores = dict()
         count = 0
         for judge_model, output in example_scores.items():
-            example_human_scores = output["human_scores"]
+            if key not in golden_records:
+                continue
+            example_human_scores = golden_records[key]
             judge_scores = output["new_scores"]
             output_scores = []
             for value in judge_scores.values():

@@ -41,7 +41,7 @@ def main(
         for key, score in prediction[scores_key].items():
             if use_old_keys:
                 key = old_key_mapping[key]
-            model_scores[key].append(mean(score))
+            model_scores[key].append(mean(score) if isinstance(score, list) else score)
         model_names.append(reference["player"]["model_name"])
 
     final_human_scores = [mean(s) for s in zip(*[scores for _, scores in human_scores.items()])]
