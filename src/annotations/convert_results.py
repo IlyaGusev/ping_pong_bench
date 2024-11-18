@@ -1,4 +1,4 @@
-import fire
+import fire  # type: ignore
 import json
 
 mapping = {
@@ -9,7 +9,7 @@ mapping = {
     "Полностью согласен": 5,
 }
 
-def main(input_path, orig_path, output_path):
+def main(input_path: str, orig_path: str, output_path: str) -> None:
     orig_records = dict()
     with open(orig_path) as r:
         for idx, line in enumerate(r):

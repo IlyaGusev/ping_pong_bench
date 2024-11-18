@@ -1,0 +1,39 @@
+<View>
+  <Text name="char_name" value="Персонаж: $char_name" />
+  <Collapse>
+    <Panel value="Карточка персонажа">
+    	<View><Text name="char_info" value="$char_info" /></View>
+  	</Panel>
+  </Collapse>
+  <HyperText name="text" value="$html" />
+  <View style="box-shadow: 2px 2px 5px #999;                padding: 20px; margin-top: 2em;                border-radius: 5px;">
+    <Header value="Ответы ассистента идеально соответствуют карточке персонажа."/>
+    <Choices name="in_character" toName="text" choice="single" showInLine="true">
+      <Choice value="Полностью не согласен"/>
+      <Choice value="Не согласен"/>
+      <Choice value="Не знаю"/>
+      <Choice value="Согласен"/>
+      <Choice value="Полностью согласен"/>
+    </Choices>
+  </View>
+  <View style="box-shadow: 2px 2px 5px #999;                padding: 20px; margin-top: 2em;                border-radius: 5px;">
+    <Header value="Ответы ассистента чрезвычайно интересны и увлекательны."/>
+    <Choices name="entertaining" toName="text" choice="single" showInLine="true">
+      <Choice value="Полностью не согласен"/>
+      <Choice value="Не согласен"/>
+      <Choice value="Не знаю"/>
+      <Choice value="Согласен"/>
+      <Choice value="Полностью согласен"/>
+    </Choices>
+  </View>
+    <View style="box-shadow: 2px 2px 5px #999;                padding: 20px; margin-top: 2em;                border-radius: 5px;">
+    <Header value="Русский язык ассистента идеален, нет ошибок, нет внезапных переходов на английский."/>
+    <Choices name="fluency" toName="text" choice="single" showInLine="true">
+      <Choice value="Полностью не согласен"/>
+      <Choice value="Не согласен"/>
+      <Choice value="Не знаю"/>
+      <Choice value="Согласен"/>
+      <Choice value="Полностью согласен"/>
+    </Choices>
+  </View>
+</View>

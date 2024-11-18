@@ -1,9 +1,9 @@
 import json
 import csv
-from typing import Dict, Any
+from typing import Dict, Any, List
 
-import fire
-import markdown
+import fire  # type: ignore
+import markdown  # type: ignore
 
 
 def to_markdown(record: Dict[str, Any]) -> str:
@@ -11,13 +11,12 @@ def to_markdown(record: Dict[str, Any]) -> str:
     messages = record["messages"]
     for m in messages:
         content = m["content"]
-        #content = content.replace("*", "**")
         result += "\n**{role}**:\n\n{content}\n\n".format(role=m["role"].capitalize(), content=content)
     return result
 
 
-def markdown_to_html(text):
-    html = markdown.markdown(text)
+def markdown_to_html(text: str) -> str:
+    html: str = markdown.markdown(text)
     user_color = "#6a9fb5"
     assistant_color = "#4f6b12"
     template = "<p{style}><strong>{role}</strong>:</p>\n<p{style}>"
@@ -28,8 +27,9 @@ def markdown_to_html(text):
     print(html)
     return html
 
-def main(input_path: str, output_path: str):
-    new_records = []
+
+def main(input_path: str, output_path: str) -> None:
+    new_records: List[Dict[str, Any]] = []
     with open(input_path) as r:
         for idx, line in enumerate(r):
             record = json.loads(line)
@@ -47,8 +47,8 @@ def main(input_path: str, output_path: str):
         writer = csv.writer(w)
         header = list(new_records[0].keys())
         writer.writerow(header)
-        for r in new_records:
-            row = [r[k] for k in header]
+        for rec in new_records:
+            row = [rec[k] for k in header]
             writer.writerow(row)
 
 

@@ -1,0 +1,39 @@
+<View>
+  <Text name="char_name" value="Character: $char_name" />
+  <Collapse>
+    <Panel value="Character card">
+      <View><Text name="char_info" value="$char_info" /></View>
+  </Panel>
+  </Collapse>
+  <HyperText name="text" value="$html" />
+  <View style="box-shadow: 2px 2px 5px #999;                padding: 20px; margin-top: 2em;                border-radius: 5px;">
+    <Header value="The bot's answers are perfectly aligned with an assigned character"/>
+    <Choices name="in_character" toName="text" choice="single" showInLine="true">
+      <Choice value="Strongly disagree"/>
+      <Choice value="Disagree"/>
+      <Choice value="Neutral"/>
+      <Choice value="Agree"/>
+      <Choice value="Strongly agree"/>
+    </Choices>
+  </View>
+  <View style="box-shadow: 2px 2px 5px #999;                padding: 20px; margin-top: 2em;                border-radius: 5px;">
+    <Header value="The bot's responses are extremely engaging and entertaining"/>
+    <Choices name="entertaining" toName="text" choice="single" showInLine="true">
+      <Choice value="Strongly disagree"/>
+      <Choice value="Disagree"/>
+      <Choice value="Neutral"/>
+      <Choice value="Agree"/>
+      <Choice value="Strongly agree"/>
+    </Choices>
+  </View>
+    <View style="box-shadow: 2px 2px 5px #999;                padding: 20px; margin-top: 2em;                border-radius: 5px;">
+    <Header value="The bot's language use is of the highest quality, without any mistakes"/>
+    <Choices name="fluency" toName="text" choice="single" showInLine="true">
+      <Choice value="Strongly disagree"/>
+      <Choice value="Disagree"/>
+      <Choice value="Neutral"/>
+      <Choice value="Agree"/>
+      <Choice value="Strongly agree"/>
+    </Choices>
+  </View>
+</View>
