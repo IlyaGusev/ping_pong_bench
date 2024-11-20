@@ -17,14 +17,23 @@ def to_markdown(record: Dict[str, Any]) -> str:
 
 def markdown_to_html(text: str) -> str:
     html: str = markdown.markdown(text)
+    html = "<link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>\n" + html
     user_color = "#6a9fb5"
     assistant_color = "#4f6b12"
-    template = "<p{style}><strong>{role}</strong>:</p>\n<p{style}>"
-    user_style = f' style="color: {user_color};"'
-    assistant_style = f' style="color: {assistant_color};"'
-    html = html.replace(template.format(style="", role="Assistant"), template.format(style=assistant_style, role="Assistant"))
-    html = html.replace(template.format(style="", role="User"), template.format(style=user_style, role="User"))
-    print(html)
+    template = "<p{style}>"
+    user_style = f''' style="color: {user_color}; font-family: 'Roboto', sans-serif;"'''
+    assistant_style = f''' style="color: {assistant_color}; font-family: 'Roboto', sans-serif;"'''
+    current_role = None
+    new_lines = []
+    for line in html.split("\n"):
+        if "Assistant" in line:
+            current_role = "assistant"
+        elif "User" in line:
+            current_role = "user"
+        style = assistant_style if current_role == "assistant" else user_style
+        line = line.replace(template.format(style=""), template.format(style=style))
+        new_lines.append(line)
+    html = "\n".join(new_lines)
     return html
 
 

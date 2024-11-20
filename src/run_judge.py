@@ -115,18 +115,21 @@ def main(
     existing_keys = set()
     if os.path.exists(output_path):
         with open(output_path, encoding="utf-8") as r:
-            outputs = json.load(r)["outputs"]
+            data = json.load(r)
+            outputs = data["outputs"]
             for output in outputs:
                 character = Character.from_dict(output["character"])
                 situation = Situation.from_dict(output["situation"])
                 record_key = compose_key(character=character, situation=situation)
-                existing_keys.add(record_key)
+                player_name = output.get("player", dict()).get("model_name")
+                existing_keys.add((record_key, player_name))
 
     for i, record in enumerate(records):
         character = Character.from_dict(record["character"])
         situation = Situation.from_dict(record["situation"])
         record_key = compose_key(character=character, situation=situation)
-        if record_key in existing_keys:
+        player_name = record.get("player", dict()).get("model_name")
+        if (record_key, player_name) in existing_keys:
             print(f"Existing key: {record_key}")
             continue
 
@@ -153,9 +156,9 @@ def main(
             output_path=output_path,
             outputs=outputs,
             judge_provider=judge_provider.to_dict(),
-            interrogator_provider=global_params["interrogator"],
-            player_provider=global_params["player"],
-            version=global_params["version"],
+            interrogator_provider=global_params.get("interrogator"),
+            player_provider=global_params.get("player"),
+            version=global_params.get("version"),
             score_key=output_key,
         )
 

@@ -15,7 +15,77 @@ from git import Repo
 from src.build_player_html import generate_html
 
 
-def bootstrap_mean(data: List[float], n_bootstrap: int = 1000) -> Tuple[float, float, float]:
+SELECTOR_CODE = """
+<div class="selector-container" style="display: flex; align-items: center;">
+  <label for="weightSelector"><sup>Score weights:</sup> </label>
+  <select id="weightSelector" onchange="updateVisibility()" class="weight-select">
+    <option value="0.333_0.333_0.333" selected>character: 1, entertain: 1, fluency: 1</option>
+    <option value="0.25_0.5_0.25">character: 1, entertain: 2, fluency: 1</option>
+    <option value="0.5_0.25_0.25">character: 2, entertain: 1, fluency: 1</option>
+    <option value="0.25_0.25_0.5">character: 1, entertain: 1, fluency: 2</option>
+  </select>
+  <style>
+  .weight-select {
+    padding: 3px;
+    margin: 0 0 0 3px;
+    font-family: monospace;
+    background: #2D2D2D;
+    color: #B5B5B5;
+    border: 1px solid #404040;
+    border-radius: 3px;
+    line-height: 1
+    height: 20px;
+  }
+  .weight-select option {
+    background: #2D2D2D;
+    color: #B5B5B5;
+  }
+  sub[data-weight]:not([data-weight="0.333_0.333_0.333"]) {
+    display: none;
+  }
+  </style>
+
+  <script>
+    function updateVisibility() {
+      const selected = document.getElementById('weightSelector').value;
+      document.querySelectorAll('sub[data-weight]').forEach(sub => {
+        sub.hidden = sub.dataset.weight !== selected;
+      });
+
+      document.querySelectorAll('th:has(sub[data-weight])').forEach(th => {
+        const hasSelectedWeight = th.querySelector(`sub[data-weight="${selected}"]`);
+        const columnIndex = Array.from(th.parentElement.children).indexOf(th);
+        if (columnIndex > -1) {
+          document.querySelectorAll(`tr td:nth-child(${columnIndex + 1})`).forEach(td => {
+            td.style.display = hasSelectedWeight ? 'table-cell' : 'none';
+          });
+          th.style.display = hasSelectedWeight ? 'table-cell' : 'none';
+
+          if (hasSelectedWeight && th.textContent.includes('Length norm score')) {
+            const tbody = th.closest('table').querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            rows.sort((a, b) => {
+              const aValue = parseFloat(a.children[columnIndex].textContent);
+              const bValue = parseFloat(b.children[columnIndex].textContent);
+              return bValue - aValue;
+            });
+            tbody.innerHTML = '';
+            rows.forEach(row => tbody.appendChild(row));
+          }
+        }
+      });
+    }
+    document.addEventListener('DOMContentLoaded', updateVisibility);
+  </script>
+</div>
+"""
+
+
+def display_str(text: str) -> str:
+    return text.replace("_", " ").capitalize()
+
+
+def bootstrap_mean(data: List[float], n_bootstrap: int = 100) -> Tuple[float, float, float]:
     means = []
     for _ in range(n_bootstrap):
         sample = np.random.choice(data, size=len(data), replace=True)
@@ -71,7 +141,17 @@ def build_table(
             key = str(output["messages"])
             all_scores[key][judge_name] = output
 
-    weights = {"claude-3-5-sonnet-20240620": 1.0, "gpt-4o": 1.0}
+    model_weights = {"claude-3-5-sonnet-20240620": 1.0, "gpt-4o": 1.0}
+    model_weights = {k: v / sum(model_weights.values()) for k, v in model_weights.items()}
+    metric_header = ("in_character", "entertaining", "fluency")
+    metric_weights = [
+        (0.333, 0.333, 0.333),
+        (0.25, 0.5, 0.25),
+        (0.5, 0.25, 0.25),
+        (0.25, 0.25, 0.5),
+    ]
+    default_weight_signature = "_".join(map(str, metric_weights[0]))
+
     final_scores: Dict[str, Dict[str, List[float]]] = defaultdict(lambda: defaultdict(list))
     for _, example_scores in all_scores.items():
         example_judge_scores: Dict[str, Dict[str, Any]] = defaultdict(dict)
@@ -79,17 +159,20 @@ def build_table(
         for judge_model, output in example_scores.items():
             player_name = output["player"]["model_name"]
             judge_scores = output["scores"]
-            output_scores = []
+            output_scores = dict()
             for key, value in judge_scores.items():
                 if "refusal" in key:
                     continue
                 score = mean(value)
                 example_judge_scores[key][judge_model] = score
-                output_scores.append(score)
-            final_score = mean(output_scores)
-            example_judge_scores["final"][judge_model] = final_score
+                output_scores[key] = score
+            for metric_weight in metric_weights:
+                merged_metric_weight = dict(zip(metric_header, metric_weight))
+                final_score = sum([merged_metric_weight[k] * v for k, v in output_scores.items()])
+                metric_weight_signature = "_".join(map(str, metric_weight))
+                example_judge_scores[f"final_{metric_weight_signature}"][judge_model] = final_score
         for key, scores in example_judge_scores.items():
-            final_score = mean([weights[k] * v for k, v in scores.items()])
+            final_score = sum([model_weights[k] * v for k, v in scores.items()])
             final_scores[player_name][key].append(final_score)
 
     players = dict()
@@ -115,26 +198,31 @@ def build_table(
 
     # Length normalization
     median_length = median([r["avg_length"] for r in players.values()])
-    min_score = min([r["final"] for r in players.values()])
-    max_score = max([r["final"] for r in players.values()])
-    score_range = max_score - min_score
-    adjustment_factor = 0.07
-    for player_name, key_scores in final_scores.items():
-        record = players[player_name]
-        x = median_length / record["avg_length"]
-        x = 1 + (x - 1) * adjustment_factor
-        x = max(x, 1 - adjustment_factor)
-        x = min(x, 1)
-
-        s = [s * x for s in key_scores["final"]]
-        m, ci_lower, ci_upper = bootstrap_mean(s)
-        record["length_norm_score"] = m
-        record["length_norm_score_ci_width"] = (ci_upper - ci_lower) / 2
+    for metric_weight in metric_weights:
+        metric_weight_signature = "_".join(map(str, metric_weight))
+        final_key = f"final_{metric_weight_signature}"
+        min_score = min([r[final_key] for r in players.values()])
+        max_score = max([r[final_key] for r in players.values()])
+        score_range = max_score - min_score
+        adjustment_factor = 0.07
+        for player_name, key_scores in final_scores.items():
+            record = players[player_name]
+            x = median_length / record["avg_length"]
+            x = 1 + (x - 1) * adjustment_factor
+            x = max(x, 1 - adjustment_factor)
+            x = min(x, 1)
+            v = key_scores[final_key]
+            s = [s * x for s in v]
+            m, ci_lower, ci_upper = bootstrap_mean(s)
+            record[f"length_norm_score_{metric_weight_signature}"] = m
+            record[f"length_norm_score_{metric_weight_signature}_ci_width"] = (ci_upper - ci_lower) / 2
 
     records = list(players.values())
     for record in records:
-        record["final"] = "{:.2f}<sub><sup>±{:.2f}</sup></sub>".format(record["final"], record.pop("final_ci_width"))
-        record["length_norm_score"] = "{:.2f}<sub><sup>±{:.2f}</sup></sub>".format(record["length_norm_score"], record.pop("length_norm_score_ci_width"))
+        for key in list(record.keys()):
+            if ("final" in key or "length_norm_score" in key) and "ci_width" not in key:
+                ci_width_key = key + "_ci_width"
+                record[key] = "{:.2f}<sub><sup>±{:.2f}</sup></sub>".format(record[key], record.pop(ci_width_key))
 
     mapping = (
         ("model_name", "model_name"),
@@ -147,14 +235,20 @@ def build_table(
         ("num_situations", "num_cases"),
         ("avg_length", "avg_length"),
     )
-    for record in records:
-        for key, value in mapping:
-            record[value] = record.pop(key)
-    records.sort(key=lambda x: x["length_norm_score"], reverse=True)
+
+    for key, value in mapping:
+        for record in records:
+            for rk, rv in list(record.items()):
+                if key in rk:
+                    new_key = rk.replace(key, value)
+                    record[new_key] = record.pop(rk)
+
+    length_norm_key = f"length_norm_score_{default_weight_signature}"
+    records.sort(key=lambda x: x[length_norm_key], reverse=True)
     rank = 0
     prev_final_score = None
     for i, record in enumerate(records):
-        final_score = float(record["length_norm_score"].split("<sub>")[0])
+        final_score = float(record[length_norm_key].split("<sub>")[0])
         if not prev_final_score:
             rank = i + 1
             prev_final_score = final_score
@@ -163,26 +257,23 @@ def build_table(
             prev_final_score = final_score
         record["#"] = rank
 
-    columns = ["#"] + [m[1] for m in mapping]
-    pd.set_option("display.precision", 2)
-
-    # Set display options to show all columns
-    pd.set_option("display.max_columns", None)
-    pd.set_option("display.width", None)
-    pd.set_option("display.max_colwidth", None)
-
-    df = pd.DataFrame(records).sort_values(by="length_norm_score", ascending=False)[columns]
-    print(df)
-
-    # Convert DataFrame to list of lists for tabulate
+    columns = [k for k in records[0].keys() if "ci_width" not in k][:-1]
+    columns.insert(0, "#")
+    df = pd.DataFrame(records).sort_values(by=length_norm_key, ascending=False)[columns]
     table_data = df.values.tolist()
-
-    # Add column names as the first row
-    columns = [row.replace("_", " ").capitalize() for row in columns]
+    columns = [display_str(row) for row in columns]
     table_data.insert(0, columns)
 
     # Create the table using tabulate
     table = tabulate(table_data, headers="firstrow", tablefmt="github", floatfmt=".2f")
+    for metric_weight in metric_weights:
+        metric_weight_signature = "_".join(map(str, metric_weight))
+        key = display_str(f"avg_score_{metric_weight_signature}")
+        table = table.replace(key, f'Avg score<sub data-weight="{metric_weight_signature}"></sub>')
+        key = display_str(f"length_norm_score_{metric_weight_signature}")
+        table = table.replace(key, f'Length norm score<sub data-weight="{metric_weight_signature}"></sub>')
+    table = SELECTOR_CODE + "\n\n" + table
+
     if output_path:
         with open(output_path, "w") as w:
             commit_info = get_last_commit_info()

@@ -7,6 +7,11 @@ mapping = {
     "Не знаю": 3,
     "Согласен": 4,
     "Полностью согласен": 5,
+    "Strongly disagree": 1,
+    "Disagree": 2,
+    "Neutral": 3,
+    "Agree": 4,
+    "Strongly agree": 5
 }
 
 def main(input_path: str, orig_path: str, output_path: str) -> None:
