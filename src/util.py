@@ -61,10 +61,10 @@ def generate(
 def save(
     output_path: str,
     outputs: List[Dict[str, Any]],
-    interrogator_provider: Dict[str, Any],
-    judge_provider: Dict[str, Any],
-    player_provider: Dict[str, Any],
-    version: int,
+    interrogator_provider: Optional[Dict[str, Any]],
+    judge_provider: Optional[Dict[str, Any]],
+    player_provider: Optional[Dict[str, Any]],
+    version: Optional[int],
     score_key: str = "scores",
 ) -> None:
     scores: Dict[str, List[int]] = defaultdict(list)
