@@ -1,3 +1,4 @@
+import os
 import fire  # type: ignore
 import json
 from typing import Dict, List
@@ -5,13 +6,14 @@ from collections import defaultdict
 from statistics import mean
 
 
-def main(files: str, output_path: str) -> None:
-    all_files = files.split(",")
+def main(input_dir: str, output_path: str) -> None:
 
     records = dict()
     scores: Dict[str, Dict[str, List[float]]] = defaultdict(lambda: defaultdict(list))
-    for f in all_files:
-        with open(f) as r:
+    for f in os.listdir(input_dir):
+        if not f.endswith(".jsonl"):
+            continue
+        with open(os.path.join(input_dir, f)) as r:
             for line in r:
                 record = json.loads(line)
                 messages = str(record["messages"])

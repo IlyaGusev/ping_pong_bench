@@ -109,6 +109,7 @@ def build_table(
 ) -> None:
     results_dir = results_dir.rstrip("/").lstrip("/")
 
+    judge_model_mapping = {"gpt-4o-2024-08-06": "gpt-4o"}
     all_scores: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
     player_scores: Dict[str, List[Any]] = defaultdict(list)
     player_dialogs: Dict[str, Dict[str, Any]] = defaultdict(dict)
@@ -129,6 +130,7 @@ def build_table(
             player_dialogs[player_name][str(output["messages"])] = output["messages"]
             judge = data["judge"]
             judge_name = judge["model_name"]
+            judge_name = judge_model_mapping.get(judge_name, judge_name)
             scores = output["scores"]
             output["player"] = player
             output["judge"] = judge
@@ -299,7 +301,8 @@ def build_table(
                 player = records[0]["player"]
                 player["short_name"] = player2shortname[player["model_name"]]
                 judge = records[0]["judge"]
-                judge["short_name"] = player2shortname[judge["model_name"]]
+                judge_full_name = judge_model_mapping.get(judge["model_name"], judge["model_name"])
+                judge["short_name"] = player2shortname[judge_full_name]
                 html += generate_html(
                     {
                         "outputs": records,

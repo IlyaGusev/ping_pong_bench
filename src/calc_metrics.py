@@ -13,7 +13,7 @@ from pyvis.network import Network  # type: ignore
 from scipy.stats import spearmanr, kendalltau
 
 
-def main(input_dir: str, golden_path: str) -> None:
+def main(input_dir: str, golden_path: str, metric: str = "final") -> None:
     golden_records = dict()
     with open(golden_path) as r:
         for line in r:
@@ -47,9 +47,12 @@ def main(input_dir: str, golden_path: str) -> None:
             example_human_scores = golden_records[key]
             judge_scores = output["new_scores"]
             output_scores = []
-            for value in judge_scores.values():
-                output_scores.append(mean(value))
-            final_score = mean(output_scores)
+            if metric == "final":
+                for value in judge_scores.values():
+                    output_scores.append(mean(value))
+                final_score = mean(output_scores)
+            else:
+                final_score = mean(judge_scores[metric])
             example_judge_scores[judge_model] = final_score
             count += 1
         if not example_human_scores:
@@ -57,7 +60,10 @@ def main(input_dir: str, golden_path: str) -> None:
         if "claude-3-5-sonnet-20240620" not in example_judge_scores:
             continue
 
-        final_human_score = mean(example_human_scores.values())
+        if metric == "final":
+            final_human_score = mean(example_human_scores.values())
+        else:
+            final_human_score = example_human_scores[metric]
         human_scores.append(final_human_score)
 
         weights = {"claude-3-5-sonnet-20240620": 0.5, "gpt-4o": 0.5}
