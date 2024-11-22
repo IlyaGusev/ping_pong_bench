@@ -72,8 +72,8 @@ def main(input_dir: str, golden_path: str, metric: str = "final") -> None:
         sonnet_scores.append(example_judge_scores["claude-3-5-sonnet-20240620"])
 
     print("Support:", len(human_scores))
-    print("Sonnet only, Spearman:", spearmanr(human_scores, sonnet_scores)[0])
-    print("Sonnet and GPT-4o:", spearmanr(human_scores, top_2_scores)[0])
+    print("Sonnet only, Spearman: {}, p={}".format(*spearmanr(human_scores, sonnet_scores)))
+    print("Sonnet and GPT-4o:, {}, p={}".format(*spearmanr(human_scores, top_2_scores)))
     print("Sonnet and GPT-4o, Kendall:", kendalltau(human_scores, top_2_scores).statistic)
 
 

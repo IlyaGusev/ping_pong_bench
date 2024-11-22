@@ -47,20 +47,7 @@ def main(
     final_human_scores = [mean(s) for s in zip(*[scores for _, scores in human_scores.items()])]
     final_model_scores = [mean(s) for s in zip(*[scores for _, scores in model_scores.items()])]
     assert len(final_human_scores) == len(final_model_scores)
-    print("Support:", len(final_human_scores))
-    for key, ref_scores in human_scores.items():
-        pred_scores = model_scores[key]
-        spearman_corr, spearman_corr_p = spearmanr(ref_scores, pred_scores)
-        kendall = kendalltau(pred_scores, ref_scores).statistic
-        print(f"Spearman, {key}, {spearman_corr:.3f}, p={spearman_corr_p}")
-        print(f"Kendall, {key}, {kendall:.3f}")
 
-    final_corr, final_corr_p = spearmanr(final_human_scores, final_model_scores)
-    final_kendall = kendalltau(final_human_scores, final_model_scores).statistic
-    print(f"Spearman, final, {final_corr:.3f}, p={final_corr_p}")
-    print(f"Kendall, final, {final_kendall:.3f}")
-
-    print()
     print("Human learderboard:")
     human_leaderboard_scores = defaultdict(list)
     for model_name, score in zip(model_names, final_human_scores):
@@ -84,6 +71,21 @@ def main(
     model_leaderboard_results.sort(reverse=True)
     for score, num, model_name in model_leaderboard_results:
         print(f"{score:.2f}, {num}, {model_name}")
+
+
+    print()
+    print("Support:", len(final_human_scores))
+    for key, ref_scores in human_scores.items():
+        pred_scores = model_scores[key]
+        spearman_corr, spearman_corr_p = spearmanr(ref_scores, pred_scores)
+        kendall = kendalltau(pred_scores, ref_scores).statistic
+        print(f"Spearman, {key}, {spearman_corr:.3f}, p={spearman_corr_p}")
+        print(f"Kendall, {key}, {kendall:.3f}")
+
+    final_corr, final_corr_p = spearmanr(final_human_scores, final_model_scores)
+    final_kendall = kendalltau(final_human_scores, final_model_scores).statistic
+    print(f"Spearman, final, {final_corr:.3f}, p={final_corr_p}")
+    print(f"Kendall, final, {final_kendall:.3f}")
 
 
 if __name__ == "__main__":
