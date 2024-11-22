@@ -85,7 +85,7 @@ def display_str(text: str) -> str:
     return text.replace("_", " ").capitalize()
 
 
-def bootstrap_mean(data: List[float], n_bootstrap: int = 100) -> Tuple[float, float, float]:
+def bootstrap_mean(data: List[float], n_bootstrap: int = 1000) -> Tuple[float, float, float]:
     means = []
     for _ in range(n_bootstrap):
         sample = np.random.choice(data, size=len(data), replace=True)
