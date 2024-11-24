@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt  # type: ignore
 import pandas as pd  # type: ignore
 import numpy as np
 import fire  # type: ignore
+from scipy.stats import spearmanr  # type: ignore
 
 
 def main(input_path: str, output_path: str) -> None:
@@ -15,45 +16,34 @@ def main(input_path: str, output_path: str) -> None:
     # Read the CSV data
     df = pd.read_csv(input_path)
 
+    print(spearmanr(df["pp_score"], df["rpbench_score"]))
+
     # Calculate ranks for pp_score and cw_score (lower is better)
     df["pp_rank"] = df["pp_score"].rank(ascending=False)
-    df["cw_rank"] = df["cw_score"].rank(ascending=False)
+    df["rpbench_rank"] = df["rpbench_score"].rank(ascending=False)
 
     # Sort the dataframe by pp_rank
     df_sorted = df.sort_values("pp_rank")
 
     # Create the plot with adjusted dimensions
-    fig, ax = plt.subplots(figsize=(12, 10))  # Increased size for better visibility
+    fig, ax = plt.subplots(figsize=(12, 7))  # Increased size for better visibility
 
     # Create a custom color palette
     colors = [
         "#e41a1c",
         "#377eb8",
         "#4daf4a",
-        "#e41a1c",#"#984ea3",
+        "#984ea3",
         "#ff7f00",
-        "#984ea3",#"#a65628",
-        "#984ea3",#"#f781bf",
+        "#a65628",
+        "#f781bf",
         "#999999",
-        "#4daf4a",#"#66c2a5",
-        "#ff7f00",#"#fc8d62",
-        "#f781bf",#"#8da0cb",
-        "#ffd92f",#"#e78ac3",
-        "#984ea3",#"#a6d854",
-        "#f781bf",#"#ffd92f",
-        "#ffd92f",#"#e5c494",
-        "#f781bf",#"#b3b3b3",
-        "#377eb8",#"#8dd3c7",
-        "#bebada",
-        "#e41a1c",#"#fb8072",
-        "#f781bf",#"#80b1d3",
-        "#f781bf",#"#fdb462",
-        "#b3de69",
-        "#fccde5",
-        "#d9d9d9",
-        "#bc80bd",
-        "#ccebc5",
-        "#ffed6f",
+        "#66c2a5",
+        "#fc8d62",
+        "#8da0cb",
+        "#e78ac3",
+        "#a6d854",
+        "#ffd92f",
     ]
 
     # Define line styles and markers
@@ -73,7 +63,7 @@ def main(input_path: str, output_path: str) -> None:
         marker = markers[i % len(markers)]
         plt.plot(
             [0, 1],
-            [row["cw_rank"], row["pp_rank"]],
+            [row["rpbench_rank"], row["pp_rank"]],
             color=color,
             linestyle=line_style,
             linewidth=2,
@@ -86,13 +76,13 @@ def main(input_path: str, output_path: str) -> None:
         )
 
     # Customize the plot
-    plt.title("Model Rankings: Creative Writing vs PingPong", fontsize=18)
+    plt.title("Model Rankings: RPBench vs PingPong", fontsize=18)
     plt.xlabel("Benchmark", fontsize=16)
     plt.ylabel("Rank (higher position = better performance)", fontsize=16)
 
     # Set x-axis to show only PingPong and Creative Writing
     ax.set_xticks([0, 1])
-    ax.set_xticklabels(["Creative Writing", "PingPong"], fontsize=14)
+    ax.set_xticklabels(["RPBench", "PingPong"], fontsize=14)
 
     # Set y-axis to show only integer values and flip the axis
     ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
