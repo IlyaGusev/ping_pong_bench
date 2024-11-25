@@ -30,24 +30,24 @@ def main(input_path: str, output_path: str) -> None:
         "#e41a1c",
         "#377eb8",
         "#4daf4a",
-        "#e41a1c",#"#984ea3",
+        "#e41a1c",  # "#984ea3",
         "#ff7f00",
-        "#984ea3",#"#a65628",
-        "#984ea3",#"#f781bf",
+        "#984ea3",  # "#a65628",
+        "#984ea3",  # "#f781bf",
         "#999999",
-        "#4daf4a",#"#66c2a5",
-        "#ff7f00",#"#fc8d62",
-        "#f781bf",#"#8da0cb",
-        "#ffd92f",#"#e78ac3",
-        "#984ea3",#"#a6d854",
-        "#f781bf",#"#ffd92f",
-        "#ffd92f",#"#e5c494",
-        "#f781bf",#"#b3b3b3",
-        "#377eb8",#"#8dd3c7",
+        "#4daf4a",  # "#66c2a5",
+        "#ff7f00",  # "#fc8d62",
+        "#f781bf",  # "#8da0cb",
+        "#ffd92f",  # "#e78ac3",
+        "#984ea3",  # "#a6d854",
+        "#f781bf",  # "#ffd92f",
+        "#ffd92f",  # "#e5c494",
+        "#f781bf",  # "#b3b3b3",
+        "#377eb8",  # "#8dd3c7",
         "#bebada",
-        "#e41a1c",#"#fb8072",
-        "#f781bf",#"#80b1d3",
-        "#f781bf",#"#fdb462",
+        "#e41a1c",  # "#fb8072",
+        "#f781bf",  # "#80b1d3",
+        "#f781bf",  # "#fdb462",
         "#b3de69",
         "#fccde5",
         "#d9d9d9",
@@ -58,7 +58,24 @@ def main(input_path: str, output_path: str) -> None:
 
     # Define line styles and markers
     line_styles = ["-", "--", "-.", ":"]
-    markers = ["o", "s", "^", "D", "v", "<", ">", "p", "*", "h", "H", "+", "x", "d", "|", "_"]
+    markers = [
+        "o",
+        "s",
+        "^",
+        "D",
+        "v",
+        "<",
+        ">",
+        "p",
+        "*",
+        "h",
+        "H",
+        "+",
+        "x",
+        "d",
+        "|",
+        "_",
+    ]
 
     # Ensure we have enough colors, line styles, and markers
     num_models = len(df_sorted)
@@ -82,7 +99,7 @@ def main(input_path: str, output_path: str) -> None:
             markeredgewidth=2,
             markeredgecolor="black",
             markerfacecolor=color,
-            label=f"{row['model']}"
+            label=f"{row['model']}",
         )
 
     # Customize the plot
@@ -103,7 +120,13 @@ def main(input_path: str, output_path: str) -> None:
     ax.axvline(x=1, color="gray", linestyle="--", alpha=0.5)
 
     # Add legend with larger font size and adjust its position
-    plt.legend(bbox_to_anchor=(1.05, 0.973), loc="upper left", fontsize=13, borderaxespad=0., labelspacing=1.2425)
+    plt.legend(
+        bbox_to_anchor=(1.05, 0.973),
+        loc="upper left",
+        fontsize=13,
+        borderaxespad=0.0,
+        labelspacing=1.2425,
+    )
 
     # Adjust layout
     plt.tight_layout()

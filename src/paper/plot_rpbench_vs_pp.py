@@ -48,7 +48,24 @@ def main(input_path: str, output_path: str) -> None:
 
     # Define line styles and markers
     line_styles = ["-", "--", "-.", ":"]
-    markers = ["o", "s", "^", "D", "v", "<", ">", "p", "*", "h", "H", "+", "x", "d", "|", "_"]
+    markers = [
+        "o",
+        "s",
+        "^",
+        "D",
+        "v",
+        "<",
+        ">",
+        "p",
+        "*",
+        "h",
+        "H",
+        "+",
+        "x",
+        "d",
+        "|",
+        "_",
+    ]
 
     # Ensure we have enough colors, line styles, and markers
     num_models = len(df_sorted)
@@ -72,7 +89,7 @@ def main(input_path: str, output_path: str) -> None:
             markeredgewidth=2,
             markeredgecolor="black",
             markerfacecolor=color,
-            label=f"{row['model']}"
+            label=f"{row['model']}",
         )
 
     # Customize the plot
@@ -93,7 +110,13 @@ def main(input_path: str, output_path: str) -> None:
     ax.axvline(x=1, color="gray", linestyle="--", alpha=0.5)
 
     # Add legend with larger font size and adjust its position
-    plt.legend(bbox_to_anchor=(1.05, 0.973), loc="upper left", fontsize=13, borderaxespad=0., labelspacing=1.2425)
+    plt.legend(
+        bbox_to_anchor=(1.05, 0.973),
+        loc="upper left",
+        fontsize=13,
+        borderaxespad=0.0,
+        labelspacing=1.2425,
+    )
 
     # Adjust layout
     plt.tight_layout()
