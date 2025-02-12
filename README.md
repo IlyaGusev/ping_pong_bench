@@ -78,6 +78,9 @@ pip3 install -r requirements.txt
 Create providers.json based on [providers.example.json](https://github.com/IlyaGusev/ping_pong_bench/blob/main/providers.example.json). It supports OpenAI-like APIs.
 
 ## Run
+
+v2 judges are: `claude-3-5-sonnet-20240620` and `gpt-4o-2024-08-06`
+
 Main run example:
 
 ```bash
