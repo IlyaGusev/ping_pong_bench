@@ -1,19 +1,21 @@
 import os
 import json
 from collections import defaultdict
+from typing import Dict, Any
 
-import fire
+import fire  # type: ignore
 
-from scipy.stats import kendalltau
+from scipy.stats import kendalltau  # type: ignore
+
 
 def collect_interrogator_exp(
-    input_dir
-):
+    input_dir: str
+) -> None:
     players = set()
     judges = set()
     interrogators = set()
-    scores = defaultdict(dict)
-    judge_scores = defaultdict(dict)
+    scores: Dict[str, Dict[str, Any]] = defaultdict(dict)
+    judge_scores: Dict[str, Dict[str, Any]] = defaultdict(dict)
     for file_name in os.listdir(input_dir):
         with open(os.path.join(input_dir, file_name)) as r:
             record = json.load(r)
@@ -27,22 +29,22 @@ def collect_interrogator_exp(
             scores[interrogator][player] = (final_score, len(record["outputs"]))
             judge_scores[judge][player] = (final_score, len(record["outputs"]))
 
-    interrogators = list(interrogators)
-    players = list(players)
-    judges = list(judges)
+    interrogators_list = list(interrogators)
+    players_list = list(players)
+    judges_list = list(judges)
 
-    print("Players:", players)
+    print("Players:", players_list)
     print("By interrogator:")
     rankings = list()
-    for interrogator in interrogators:
+    for interrogator in interrogators_list:
         player_scores = sorted([(v, k) for k, v in scores[interrogator].items()], reverse=True)
         print(f"interrogator={interrogator}")
-        ranking = [-1 for _ in range(len(players))]
+        ranking = [-1 for _ in range(len(players_list))]
         for rank, (score, player) in enumerate(player_scores):
-            index = players.index(player)
+            index = players_list.index(player)
             ranking[index] = rank
             print(f"player={player}, score={score}")
-        assert -1 not in ranking, players[ranking.index(-1)]
+        assert -1 not in ranking, players_list[ranking.index(-1)]
         rankings.append(ranking)
         print()
     print(rankings)
@@ -58,15 +60,15 @@ def collect_interrogator_exp(
     print()
     print("By judge:")
     rankings = list()
-    for judge in judges:
+    for judge in judges_list:
         player_scores = sorted([(v, k) for k, v in judge_scores[judge].items()], reverse=True)
         print(f"judge={judge}")
-        ranking = [-1 for _ in range(len(players))]
+        ranking = [-1 for _ in range(len(players_list))]
         for rank, (score, player) in enumerate(player_scores):
-            index = players.index(player)
+            index = players_list.index(player)
             ranking[index] = rank
             print(f"player={player}, score={score}")
-        assert -1 not in ranking, players[ranking.index(-1)]
+        assert -1 not in ranking, players_list[ranking.index(-1)]
         rankings.append(ranking)
         print()
     print(rankings)
